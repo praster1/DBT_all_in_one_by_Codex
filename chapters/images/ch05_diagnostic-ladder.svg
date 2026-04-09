@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1">
+      <stop offset="0%" stop-color="#f7fafc"/>
+      <stop offset="100%" stop-color="#edf2f7"/>
+    </linearGradient>
+    <style>
+      .title { font: 700 30px 'Arial'; fill: #0f172a; }
+      .sub { font: 500 16px 'Arial'; fill: #334155; }
+      .box { fill: #ffffff; stroke: #cbd5e1; stroke-width: 2; rx: 18; }
+      .accent { fill: #e0f2fe; stroke: #38bdf8; stroke-width: 2; rx: 18; }
+      .text { font: 600 20px 'Arial'; fill: #0f172a; }
+      .small { font: 400 15px 'Arial'; fill: #334155; }
+      .arrow { stroke: #2563eb; stroke-width: 4; marker-end: url(#m); }
+      .hint { font: 600 14px 'Arial'; fill: #2563eb; }
+    </style>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="1200" height="700" fill="url(#bg)"/>
+  <text x="60" y="70" class="title">그림 5-1. dbt 디버깅 사다리</text>
+  <text x="60" y="104" class="sub">가장 비싼 재실행 전에, 가장 싼 관찰부터 차례대로 확인한다.</text>
+
+  <rect x="120" y="150" width="960" height="70" class="accent"/>
+  <text x="155" y="190" class="text">1) 환경 · 연결</text>
+  <text x="380" y="190" class="small">dbt debug / adapter / profile / target / 환경변수 / 권한</text>
+
+  <rect x="160" y="255" width="880" height="70" class="box"/>
+  <text x="195" y="295" class="text">2) 구조 · 파싱</text>
+  <text x="420" y="295" class="small">dbt parse / YAML / Jinja / source/ref 이름 / 들여쓰기</text>
+
+  <rect x="200" y="360" width="800" height="70" class="box"/>
+  <text x="235" y="400" class="text">3) 범위 · 그래프</text>
+  <text x="460" y="400" class="small">dbt ls / selector / upstream-downstream / show</text>
+
+  <rect x="240" y="465" width="720" height="70" class="box"/>
+  <text x="275" y="505" class="text">4) SQL · 매크로</text>
+  <text x="500" y="505" class="small">target/compiled / target/run / materialization / adapter behavior</text>
+
+  <rect x="280" y="570" width="640" height="70" class="box"/>
+  <text x="315" y="610" class="text">5) 데이터 · 운영</text>
+  <text x="530" y="610" class="small">test failures / grain / fanout / incremental / run_results / CI</text>
+
+  <line x1="600" y1="220" x2="600" y2="252" class="arrow"/>
+  <line x1="600" y1="325" x2="600" y2="357" class="arrow"/>
+  <line x1="600" y1="430" x2="600" y2="462" class="arrow"/>
+  <line x1="600" y1="535" x2="600" y2="567" class="arrow"/>
+
+  <text x="930" y="203" class="hint">가장 싼 관찰</text>
+  <text x="930" y="625" class="hint">가장 비싼 재실행</text>
+</svg>

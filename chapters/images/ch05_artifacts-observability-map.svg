@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="760" viewBox="0 0 1300 760">
+  <defs>
+    <style>
+      .title { font: 700 30px 'Arial'; fill: #0f172a; }
+      .sub { font: 500 16px 'Arial'; fill: #475569; }
+      .q { font: 700 18px 'Arial'; fill: #1e293b; }
+      .t { font: 400 15px 'Arial'; fill: #334155; }
+      .boxA { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; rx: 16; }
+      .boxB { fill: #eff6ff; stroke: #93c5fd; stroke-width: 2; rx: 16; }
+      .boxC { fill: #ecfeff; stroke: #67e8f9; stroke-width: 2; rx: 16; }
+      .boxD { fill: #f5f3ff; stroke: #c4b5fd; stroke-width: 2; rx: 16; }
+      .arrow { stroke: #64748b; stroke-width: 3; marker-end: url(#m); }
+    </style>
+    <marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+      <path d="M0,0 L12,6 L0,12 z" fill="#64748b"/>
+    </marker>
+  </defs>
+  <rect width="1300" height="760" fill="#ffffff"/>
+  <text x="60" y="70" class="title">그림 5-2. 질문별로 먼저 열어야 하는 dbt 흔적</text>
+  <text x="60" y="102" class="sub">“무슨 질문을 하고 있는가”에 따라 먼저 열어야 하는 파일이 달라진다.</text>
+
+  <rect x="70" y="150" width="360" height="140" class="boxB"/>
+  <text x="95" y="185" class="q">질문 A · graph가 맞는가?</text>
+  <text x="95" y="220" class="t">- source/ref 이름이 살아 있는가</text>
+  <text x="95" y="245" class="t">- selector 범위가 맞는가</text>
+  <text x="95" y="270" class="t">- disabled/resource rename가 있었는가</text>
+
+  <rect x="470" y="150" width="360" height="140" class="boxC"/>
+  <text x="495" y="185" class="q">질문 B · SQL이 맞는가?</text>
+  <text x="495" y="220" class="t">- Jinja/macro가 어떻게 풀렸는가</text>
+  <text x="495" y="245" class="t">- adapter가 무엇을 실행했는가</text>
+  <text x="495" y="270" class="t">- incremental/merge 조건이 올바른가</text>
+
+  <rect x="870" y="150" width="360" height="140" class="boxD"/>
+  <text x="895" y="185" class="q">질문 C · 실행이 왜 실패했는가?</text>
+  <text x="895" y="220" class="t">- 실제 실패 노드는 무엇인가</text>
+  <text x="895" y="245" class="t">- query/time/status는 어떠한가</text>
+  <text x="895" y="270" class="t">- source freshness가 stale인가</text>
+
+  <line x1="250" y1="290" x2="250" y2="350" class="arrow"/>
+  <line x1="650" y1="290" x2="650" y2="350" class="arrow"/>
+  <line x1="1050" y1="290" x2="1050" y2="350" class="arrow"/>
+
+  <rect x="70" y="350" width="360" height="290" class="boxA"/>
+  <text x="95" y="390" class="q">먼저 열 파일</text>
+  <text x="95" y="430" class="t">- manifest.json</text>
+  <text x="95" y="460" class="t">- dbt parse 결과</text>
+  <text x="95" y="490" class="t">- dbt ls / dbt show</text>
+  <text x="95" y="540" class="q">대표 증상</text>
+  <text x="95" y="575" class="t">source not found / ref not found / selector mismatch</text>
+
+  <rect x="470" y="350" width="360" height="290" class="boxA"/>
+  <text x="495" y="390" class="q">먼저 열 파일</text>
+  <text x="495" y="430" class="t">- target/compiled</text>
+  <text x="495" y="460" class="t">- target/run</text>
+  <text x="495" y="490" class="t">- logs/dbt.log</text>
+  <text x="495" y="540" class="q">대표 증상</text>
+  <text x="495" y="575" class="t">macro expansion 이상 / materialization 동작 차이</text>
+
+  <rect x="870" y="350" width="360" height="290" class="boxA"/>
+  <text x="895" y="390" class="q">먼저 열 파일</text>
+  <text x="895" y="430" class="t">- run_results.json</text>
+  <text x="895" y="460" class="t">- sources.json</text>
+  <text x="895" y="490" class="t">- 실패한 test SQL / raw source</text>
+  <text x="895" y="540" class="q">대표 증상</text>
+  <text x="895" y="575" class="t">test failure / stale source / performance regression</text>
+</svg>
