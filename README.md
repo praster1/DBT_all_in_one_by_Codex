@@ -3,6 +3,7 @@
 DBT All In One 책/실습 자료 저장소입니다.
 
 ## 이번 보강에서 추가한 책 설계 문서
+- `chapters/` : 본문을 챕터별 Markdown 파일로 분리한 디렉터리(00 + CH01~18 + APP A~D)
 - `book_from_pdf.md` : `book.pdf`의 본문을 Markdown으로 변환한 텍스트 버전
 - `00_meta/book_charter.md` : 책 정체성, 대상 독자, 범위/제외 범위, 예제 A/B/C, 완료 정의
 - `01_outline/master_toc.md` : 큰 챕터 중심의 확장 목차(Part 1~8)
