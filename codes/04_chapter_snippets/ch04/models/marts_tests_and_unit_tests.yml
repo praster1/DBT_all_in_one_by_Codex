@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: "주문 단위 fact 모델"
+    columns:
+      - name: order_id
+        description: "주문의 비즈니스 키"
+        data_tests:
+          - not_null
+          - unique
+
+      - name: customer_id
+        description: "주문을 발생시킨 고객"
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_customers')
+                field: customer_id
+
+      - name: order_status
+        description: "표준화된 주문 상태"
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['placed', 'paid', 'cancelled', 'shipped', 'delivered']
+              config:
+                where: "order_date >= current_date - interval '30 day'"
+                severity: warn
+
+unit_tests:
+  - name: fct_orders_cancellation_rule
+    model: fct_orders
+    given:
+      - input: ref('int_order_lines')
+        rows:
+          - {order_id: 5003, customer_id: 102, order_date: '2026-01-05', order_status: 'cancelled', line_amount: 16.0, quantity: 1}
+    expect:
+      rows:
+        - {order_id: 5003, customer_id: 102, order_date: '2026-01-05', gross_revenue: 0.0, item_count: 0}

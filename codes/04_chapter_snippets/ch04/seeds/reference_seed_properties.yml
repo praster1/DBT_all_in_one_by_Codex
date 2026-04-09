@@ -1,0 +1,26 @@
+version: 2
+
+seeds:
+  - name: country_codes
+    description: "국가 코드 기준표"
+    config:
+      column_types:
+        country_code: varchar(2)
+        country_name: varchar(100)
+    columns:
+      - name: country_code
+        data_tests: [not_null, unique]
+
+  - name: event_name_map
+    description: "이벤트명 표준화 매핑표"
+    config:
+      quote_columns: false
+    columns:
+      - name: raw_event_name
+        data_tests: [not_null, unique]
+
+  - name: subscription_plan_catalog
+    description: "구독 요금제 기준표"
+    columns:
+      - name: plan_code
+        data_tests: [not_null, unique]

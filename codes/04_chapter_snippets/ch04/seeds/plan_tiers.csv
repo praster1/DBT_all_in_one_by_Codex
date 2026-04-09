@@ -1,0 +1,5 @@
+plan_code,plan_name,billing_cadence,list_price_usd
+FREE,Free,monthly,0
+PRO_M,Pro Monthly,monthly,29
+PRO_Y,Pro Yearly,yearly,290
+TEAM_M,Team Monthly,monthly,99

@@ -1,0 +1,14 @@
+version: 2
+
+models:
+  - name: fct_orders
+    description: '{{ doc("fct_orders_long_description") }}'
+    config:
+      tags: ['mart', 'finance']
+      meta:
+        owner: 'data-platform'
+        maturity: 'production'
+        pii: false
+    columns:
+      - name: gross_revenue
+        description: "주문 라인 금액 합계에서 취소 규칙을 반영한 주문 매출"

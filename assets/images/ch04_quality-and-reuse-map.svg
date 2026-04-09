@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#0f172a"/>
+  <text x="70" y="70" fill="#e2e8f0" font-size="30" font-family="Arial, sans-serif" font-weight="700">Quality Layer + Reuse Layer Map</text>
+  <text x="70" y="105" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">Tests, seeds, snapshots, docs, macros, packages가 어떻게 하나의 프로젝트 신뢰도로 연결되는지 보여 준다.</text>
+
+  <rect x="90" y="180" rx="18" ry="18" width="220" height="120" fill="#1d4ed8"/>
+  <text x="200" y="225" text-anchor="middle" fill="white" font-size="26" font-family="Arial" font-weight="700">Tests</text>
+  <text x="200" y="258" text-anchor="middle" fill="#dbeafe" font-size="17" font-family="Arial">data + unit</text>
+  <text x="200" y="282" text-anchor="middle" fill="#dbeafe" font-size="17" font-family="Arial">input / output contracts</text>
+
+  <rect x="350" y="180" rx="18" ry="18" width="220" height="120" fill="#0f766e"/>
+  <text x="460" y="225" text-anchor="middle" fill="white" font-size="26" font-family="Arial" font-weight="700">Seeds</text>
+  <text x="460" y="258" text-anchor="middle" fill="#ccfbf1" font-size="17" font-family="Arial">small static reference data</text>
+  <text x="460" y="282" text-anchor="middle" fill="#ccfbf1" font-size="17" font-family="Arial">managed in Git</text>
+
+  <rect x="610" y="180" rx="18" ry="18" width="220" height="120" fill="#7c3aed"/>
+  <text x="720" y="225" text-anchor="middle" fill="white" font-size="26" font-family="Arial" font-weight="700">Snapshots</text>
+  <text x="720" y="258" text-anchor="middle" fill="#ede9fe" font-size="17" font-family="Arial">current state → history</text>
+  <text x="720" y="282" text-anchor="middle" fill="#ede9fe" font-size="17" font-family="Arial">SCD2-style timeline</text>
+
+  <rect x="870" y="180" rx="18" ry="18" width="240" height="120" fill="#be123c"/>
+  <text x="990" y="225" text-anchor="middle" fill="white" font-size="26" font-family="Arial" font-weight="700">Documentation</text>
+  <text x="990" y="258" text-anchor="middle" fill="#ffe4e6" font-size="17" font-family="Arial">descriptions + docs blocks</text>
+  <text x="990" y="282" text-anchor="middle" fill="#ffe4e6" font-size="17" font-family="Arial">meta + tags + lineage</text>
+
+  <rect x="220" y="430" rx="18" ry="18" width="300" height="130" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+  <text x="370" y="475" text-anchor="middle" fill="white" font-size="28" font-family="Arial" font-weight="700">Macros</text>
+  <text x="370" y="508" text-anchor="middle" fill="#e2e8f0" font-size="18" font-family="Arial">repeatable SQL rules</text>
+  <text x="370" y="534" text-anchor="middle" fill="#e2e8f0" font-size="18" font-family="Arial">status normalization / formatting</text>
+
+  <rect x="660" y="430" rx="18" ry="18" width="300" height="130" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+  <text x="810" y="475" text-anchor="middle" fill="white" font-size="28" font-family="Arial" font-weight="700">Packages</text>
+  <text x="810" y="508" text-anchor="middle" fill="#e2e8f0" font-size="18" font-family="Arial">external dbt projects</text>
+  <text x="810" y="534" text-anchor="middle" fill="#e2e8f0" font-size="18" font-family="Arial">dbt_utils / expectations / utilities</text>
+
+  <rect x="400" y="600" rx="16" ry="16" width="400" height="70" fill="#111827" stroke="#38bdf8" stroke-width="2"/>
+  <text x="600" y="643" text-anchor="middle" fill="#e0f2fe" font-size="24" font-family="Arial" font-weight="700">신뢰 가능한 모델 + 반복 가능한 팀 운영</text>
+
+  <line x1="200" y1="300" x2="600" y2="600" stroke="#60a5fa" stroke-width="4"/>
+  <line x1="460" y1="300" x2="600" y2="600" stroke="#5eead4" stroke-width="4"/>
+  <line x1="720" y1="300" x2="600" y2="600" stroke="#c4b5fd" stroke-width="4"/>
+  <line x1="990" y1="300" x2="600" y2="600" stroke="#fda4af" stroke-width="4"/>
+  <line x1="370" y1="560" x2="600" y2="600" stroke="#cbd5e1" stroke-width="4"/>
+  <line x1="810" y1="560" x2="600" y2="600" stroke="#cbd5e1" stroke-width="4"/>
+</svg>

@@ -1,0 +1,18 @@
+version: 2
+
+snapshots:
+  - name: orders_status_snapshot
+    relation: ref('stg_orders')
+    description: "주문 상태와 금액 변화를 추적하는 snapshot"
+    config:
+      strategy: check
+      unique_key: order_id
+      check_cols:
+        - order_status
+        - total_amount
+      updated_at: updated_at
+      target_schema: snapshots
+      dbt_valid_to_current: "to_date('9999-12-31')"
+    columns:
+      - name: order_id
+        data_tests: [not_null]

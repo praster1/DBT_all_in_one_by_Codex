@@ -1,0 +1,5 @@
+raw_event_name,canonical_event_name,event_group
+ViewItem,view_item,commerce
+view-item,view_item,commerce
+AddToCart,add_to_cart,commerce
+Purchase,purchase,commerce
