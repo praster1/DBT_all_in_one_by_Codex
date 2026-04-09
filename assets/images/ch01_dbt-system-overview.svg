@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" role="img" aria-labelledby="title desc">
+  <title id="title">dbt system overview</title>
+  <desc id="desc">데이터 스택 안에서 dbt의 위치와 기본 순환을 보여주는 개요도</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#f8fafc; }
+      .title { font: 700 34px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#0f172a; }
+      .subtitle { font: 500 18px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#334155; }
+      .h { font: 700 22px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#0f172a; }
+      .t { font: 500 18px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#1e293b; }
+      .small { font: 500 16px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#475569; }
+      .box { rx:24; ry:24; stroke:#cbd5e1; stroke-width:2; }
+      .line { stroke:#475569; stroke-width:4; fill:none; marker-end:url(#arrow); }
+      .line2 { stroke:#94a3b8; stroke-width:3; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1400" height="760" class="bg"/>
+  <text x="70" y="70" class="title">그림 1-1. dbt가 데이터 스택에서 맡는 자리와 기본 순환</text>
+  <text x="70" y="108" class="subtitle">dbt는 원천 수집도, BI도 대신하지 않는다. 변환을 프로젝트로 만들고, 테스트·문서·lineage·운영 단서를 함께 관리한다.</text>
+
+  <rect x="70" y="180" width="220" height="150" fill="#dbeafe" class="box"/>
+  <text x="110" y="225" class="h">1. 원천 수집 / 적재</text>
+  <text x="110" y="265" class="t">EL/ETL, CDC, 스트리밍</text>
+  <text x="110" y="297" class="small">운영계 · 로그 · SaaS · 파일</text>
+
+  <rect x="340" y="150" width="720" height="430" fill="#ffffff" class="box"/>
+  <text x="375" y="205" class="h">2. dbt 프로젝트</text>
+  <text x="375" y="238" class="small">공식 입력과 출력, 의존성, 품질 규칙, 설명, 실행 범위를 함께 다룬다</text>
+
+  <rect x="380" y="280" width="150" height="90" fill="#ede9fe" class="box"/>
+  <text x="430" y="335" text-anchor="middle" class="h">source</text>
+
+  <rect x="560" y="280" width="150" height="90" fill="#dcfce7" class="box"/>
+  <text x="635" y="335" text-anchor="middle" class="h">staging</text>
+
+  <rect x="740" y="280" width="170" height="90" fill="#fef3c7" class="box"/>
+  <text x="825" y="335" text-anchor="middle" class="h">intermediate</text>
+
+  <rect x="940" y="280" width="150" height="90" fill="#fee2e2" class="box"/>
+  <text x="1015" y="335" text-anchor="middle" class="h">marts</text>
+
+  <rect x="430" y="430" width="610" height="100" fill="#ecfeff" class="box"/>
+  <text x="735" y="470" text-anchor="middle" class="h">tests · docs · contracts · metrics · artifacts</text>
+  <text x="735" y="505" text-anchor="middle" class="small">모델을 신뢰 가능한 데이터 제품으로 끌어올리는 메타데이터와 운영 단서</text>
+
+  <path d="M 290 255 L 380 255 L 380 325" class="line"/>
+  <path d="M 530 325 L 560 325" class="line"/>
+  <path d="M 710 325 L 740 325" class="line"/>
+  <path d="M 910 325 L 940 325" class="line"/>
+  <path d="M 1015 370 L 1015 430" class="line2"/>
+  <path d="M 430 480 L 300 480 L 300 325 L 380 325" class="line2"/>
+
+  <rect x="1110" y="180" width="220" height="150" fill="#fae8ff" class="box"/>
+  <text x="1150" y="225" class="h">3. 오케스트레이션</text>
+  <text x="1150" y="265" class="t">jobs · CI · 알림 · 재시도</text>
+  <text x="1150" y="297" class="small">dbt platform / Airflow / Dagster</text>
+
+  <rect x="1110" y="390" width="220" height="150" fill="#cffafe" class="box"/>
+  <text x="1150" y="435" class="h">4. 소비 / 활용</text>
+  <text x="1150" y="475" class="t">BI · 앱 · ML · API</text>
+  <text x="1150" y="507" class="small">대시보드와 서비스가 결과를 사용</text>
+
+  <path d="M 1060 255 L 1110 255" class="line"/>
+  <path d="M 1090 325 L 1140 325 L 1140 390" class="line2"/>
+
+  <text x="70" y="655" class="h">읽는 법</text>
+  <text x="70" y="692" class="t">dbt는 가운데 상자에 가깝다. 하지만 가운데 상자만 잘 만들어도 왼쪽 입력, 오른쪽 운영, 아래 소비가 훨씬 안정된다.</text>
+</svg>

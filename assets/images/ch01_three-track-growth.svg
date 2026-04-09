@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820" role="img" aria-labelledby="title desc">
+  <title id="title">three example track growth</title>
+  <desc id="desc">세 가지 예제가 책 전체에서 어떻게 성장하는지 보여주는 도표</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+    </marker>
+    <style>
+      .bg { fill:#fffdf8; }
+      .title { font:700 34px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#0f172a; }
+      .subtitle { font:500 18px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#334155; }
+      .h { font:700 22px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#0f172a; }
+      .t { font:500 18px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#1e293b; }
+      .small { font:500 16px 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; fill:#475569; }
+      .box { rx:22; ry:22; stroke:#cbd5e1; stroke-width:2; }
+      .phase { rx:18; ry:18; stroke:#e2e8f0; stroke-width:2; }
+      .line { stroke:#64748b; stroke-width:4; fill:none; marker-end:url(#arrow); }
+    </style>
+  </defs>
+
+  <rect width="1400" height="820" class="bg"/>
+  <text x="70" y="70" class="title">그림 1-2. 세 예제가 책 전체에서 성장하는 방식</text>
+  <text x="70" y="108" class="subtitle">처음에는 구조를 익히는 도구로 시작하고, 뒤로 갈수록 품질·운영·거버넌스·공유의 대표 케이스로 자란다.</text>
+
+  <rect x="260" y="150" width="300" height="100" fill="#dbeafe" class="phase"/>
+  <text x="410" y="195" text-anchor="middle" class="h">1단계 · 구조와 기본기</text>
+  <text x="410" y="228" text-anchor="middle" class="small">source, ref, selector, layered modeling</text>
+
+  <rect x="590" y="150" width="300" height="100" fill="#dcfce7" class="phase"/>
+  <text x="740" y="195" text-anchor="middle" class="h">2단계 · 신뢰성과 유지보수</text>
+  <text x="740" y="228" text-anchor="middle" class="small">tests, snapshots, docs, artifacts, packages</text>
+
+  <rect x="920" y="150" width="340" height="100" fill="#fef3c7" class="phase"/>
+  <text x="1090" y="195" text-anchor="middle" class="h">3단계 · 운영과 공유</text>
+  <text x="1090" y="228" text-anchor="middle" class="small">contracts, versions, semantic, performance, platform playbooks</text>
+
+  <rect x="70" y="300" width="180" height="120" fill="#fef2f2" class="box"/>
+  <text x="160" y="348" text-anchor="middle" class="h">Retail Orders</text>
+  <text x="160" y="382" text-anchor="middle" class="small">주문 · 고객 · 상품</text>
+
+  <rect x="70" y="475" width="180" height="120" fill="#eff6ff" class="box"/>
+  <text x="160" y="523" text-anchor="middle" class="h">Event Stream</text>
+  <text x="160" y="557" text-anchor="middle" class="small">로그 · 세션 · 퍼널</text>
+
+  <rect x="70" y="650" width="180" height="120" fill="#faf5ff" class="box"/>
+  <text x="160" y="698" text-anchor="middle" class="h">Subscription</text>
+  <text x="160" y="732" text-anchor="middle" class="small">상태 변화 · 청구 · MRR</text>
+
+  <rect x="280" y="295" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="315" y="338" class="h">Retail Orders</text>
+  <text x="315" y="373" class="t">grain, fanout, fact/dim</text>
+  <text x="315" y="406" class="small">order_id 한 건을 raw → mart로 추적</text>
+
+  <rect x="610" y="295" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="645" y="338" class="h">Retail Orders</text>
+  <text x="645" y="373" class="t">generic/singular/unit tests</text>
+  <text x="645" y="406" class="small">snapshot과 문서화로 신뢰성 강화</text>
+
+  <rect x="940" y="295" width="310" height="130" fill="#ffffff" class="box"/>
+  <text x="975" y="338" class="h">Retail Orders</text>
+  <text x="975" y="373" class="t">semantic-ready marts</text>
+  <text x="975" y="406" class="small">공용 metric과 데이터 제품의 입구</text>
+
+  <rect x="280" y="470" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="315" y="513" class="h">Event Stream</text>
+  <text x="315" y="548" class="t">sessionization, event taxonomy</text>
+  <text x="315" y="581" class="small">append-only 이벤트의 구조화</text>
+
+  <rect x="610" y="470" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="645" y="513" class="h">Event Stream</text>
+  <text x="645" y="548" class="t">incremental, artifacts, retries</text>
+  <text x="645" y="581" class="small">late-arriving data와 재처리 범위</text>
+
+  <rect x="940" y="470" width="310" height="130" fill="#ffffff" class="box"/>
+  <text x="975" y="513" class="h">Event Stream</text>
+  <text x="975" y="548" class="t">cost control, selectors, tuning</text>
+  <text x="975" y="581" class="small">플랫폼별 비용·성능 전략</text>
+
+  <rect x="280" y="645" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="315" y="688" class="h">Subscription</text>
+  <text x="315" y="723" class="t">current state vs historical state</text>
+  <text x="315" y="756" class="small">구독 상태와 청구 원천의 분리</text>
+
+  <rect x="610" y="645" width="270" height="130" fill="#ffffff" class="box"/>
+  <text x="645" y="688" class="h">Subscription</text>
+  <text x="645" y="723" class="t">snapshot, docs, quality gates</text>
+  <text x="645" y="756" class="small">MRR/Churn 정의를 오래 유지하기</text>
+
+  <rect x="940" y="645" width="310" height="130" fill="#ffffff" class="box"/>
+  <text x="975" y="688" class="h">Subscription</text>
+  <text x="975" y="723" class="t">contracts, versions, semantic</text>
+  <text x="975" y="756" class="small">팀 간 공용 인터페이스와 governed sharing</text>
+
+  <path d="M 250 360 L 280 360" class="line"/>
+  <path d="M 550 360 L 610 360" class="line"/>
+  <path d="M 880 360 L 940 360" class="line"/>
+
+  <path d="M 250 535 L 280 535" class="line"/>
+  <path d="M 550 535 L 610 535" class="line"/>
+  <path d="M 880 535 L 940 535" class="line"/>
+
+  <path d="M 250 710 L 280 710" class="line"/>
+  <path d="M 550 710 L 610 710" class="line"/>
+  <path d="M 880 710 L 940 710" class="line"/>
+</svg>
