@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="820" viewBox="0 0 1280 820">
+<defs>
+  <style>
+    .bg { fill: #ffffff; }
+    .title { font: 700 34px 'Arial'; fill: #0f172a; }
+    .label { font: 600 22px 'Arial'; fill: #0f172a; }
+    .text { font: 400 18px 'Arial'; fill: #334155; }
+    .small { font: 400 16px 'Arial'; fill: #475569; }
+    .card { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; rx: 18; ry: 18; }
+    .blue { fill: #e0f2fe; stroke: #38bdf8; }
+    .green { fill: #ecfccb; stroke: #84cc16; }
+    .amber { fill: #fef3c7; stroke: #f59e0b; }
+    .rose { fill: #ffe4e6; stroke: #fb7185; }
+    .arrow { stroke: #64748b; stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+  </style>
+  <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+    <path d="M0,0 L12,6 L0,12 z" fill="#64748b"/>
+  </marker>
+</defs>
+<rect class="bg" width="1280" height="820"/>
+<text x="60" y="70" class="title">Chapter 06 · state, defer, clone, retry의 관계</text>
+
+<rect x="80" y="150" width="260" height="140" class="card blue"/>
+<text x="110" y="193" class="label">State</text>
+<text x="110" y="228" class="text">코드 / metadata 차이를 비교해</text>
+<text x="110" y="256" class="text">변경된 노드를 찾는다.</text>
+
+<rect x="390" y="150" width="260" height="140" class="card green"/>
+<text x="420" y="193" class="label">Defer</text>
+<text x="420" y="228" class="text">현재 환경에 없는 upstream을</text>
+<text x="420" y="256" class="text">기준 환경 relation로 참조한다.</text>
+
+<rect x="700" y="150" width="260" height="140" class="card amber"/>
+<text x="730" y="193" class="label">Clone</text>
+<text x="730" y="228" class="text">기준 환경의 객체를 실제로</text>
+<text x="730" y="256" class="text">현재 target에 만들어 둔다.</text>
+
+<rect x="1010" y="150" width="200" height="140" class="card rose"/>
+<text x="1040" y="193" class="label">Retry</text>
+<text x="1040" y="228" class="text">직전 실패 지점부터</text>
+<text x="1040" y="256" class="text">다시 실행한다.</text>
+
+<path d="M340 220 L390 220" class="arrow"/>
+<path d="M650 220 L700 220" class="arrow"/>
+<path d="M960 220 L1010 220" class="arrow"/>
+
+<rect x="90" y="410" width="1120" height="280" class="card"/>
+<text x="130" y="455" class="label">어떤 상황에서 어떤 도구를 먼저 떠올릴까?</text>
+<text x="130" y="500" class="text">• PR에서 바뀐 모델과 downstream만 빨리 보고 싶다 → state:modified+ + defer</text>
+<text x="130" y="538" class="text">• dev/CI 환경에 실제 relation이 있어야 BI나 외부 SQL에서 확인 가능하다 → clone</text>
+<text x="130" y="576" class="text">• 긴 job이 중간에서 실패했는데 앞부분은 이미 성공했다 → retry</text>
+<text x="130" y="614" class="text">• source freshness 결과가 바뀐 downstream만 다시 계산하고 싶다 → source_status:fresher+</text>
+<text x="130" y="652" class="text">• state 결과를 사람마다 다르게 쓰고 있다 → selectors.yml로 공용 selector 정의</text>
+</svg>

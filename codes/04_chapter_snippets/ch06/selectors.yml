@@ -1,0 +1,12 @@
+selectors:
+  - name: slim_ci
+    description: "PR에서 변경된 노드와 downstream만 검증"
+    definition: "state:modified+"
+
+  - name: source_refresh
+    description: "freshness가 갱신된 source downstream만 선택"
+    definition: "source_status:fresher+"
+
+  - name: nightly_heavy
+    description: "무거운 야간 모델"
+    definition: "tag:nightly,tag:heavy"

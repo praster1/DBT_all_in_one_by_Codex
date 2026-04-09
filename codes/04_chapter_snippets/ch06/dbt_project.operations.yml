@@ -1,0 +1,12 @@
+name: my_project
+version: 1.0.0
+config-version: 2
+
+on-run-end:
+  - "{% for schema in schemas %}grant usage on schema {{ schema }} to role reporter;{% endfor %}"
+
+models:
+  my_project:
+    marts:
+      +post-hook:
+        - "analyze table {{ this }} compute statistics"

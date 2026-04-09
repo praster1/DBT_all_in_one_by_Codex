@@ -1,286 +1,576 @@
 # CHAPTER 06 · 운영, CI/CD, state/defer/clone, vars/env/hooks, 업그레이드
 
-> 개인 실습을 팀 운영으로 끌고 갈 때 필요한 실행 전략을 한 흐름으로 묶는다.
+> 개인 실습용 프로젝트를 팀이 계속 운영할 수 있는 프로젝트로 바꾸는 장이다.  
+> 앞 장들에서 **모델을 만들고 품질을 검증하는 방법**을 익혔다면, 이제는 **누가, 어디서, 어떤 순서로, 무엇을 기준으로 실행할 것인가**를 정해야 한다.  
+> 좋은 SQL이나 좋은 모델만으로는 좋은 운영이 되지 않는다. 운영은 **환경 분리**, **검증 범위 제어**, **공용 실행 규칙**, **비밀값 관리**, **업그레이드 절차**까지 포함한다.
 
-> **핵심 개념 → 사례 → 운영 기준** 설명을 먼저 충분히 풀고, 이후 장에서 예제 케이스북과 플랫폼 플레이북으로 다시 가져간다.
+운영을 별도 장으로 다루는 이유는 간단하다. dbt 프로젝트는 처음에는 한 사람이 로컬에서 `dbt run`을 돌리는 작은 프로젝트로 시작하지만, 어느 순간부터는 팀원 여러 명이 동시에 수정하고, PR을 올리고, CI에서 검증하고, 배포 환경에서 안정적으로 실행해야 하는 단계로 넘어간다. 이때 프로젝트를 살리는 것은 모델 개수보다 운영 규칙이다. 특히 `state:modified+`, `--defer`, `dbt clone`, `dbt retry`, `env_var()`, `run-operation`, release track 같은 기능은 “아는지 여부”보다 “언제 어떤 문제를 풀기 위해 쓰는지”를 이해해야 효과가 난다.
 
-dbt 프로젝트가 팀 단위로 커지기 시작하면 “좋은 모델”만으로는 충분하지 않다. dev/prod 분리, PR 검증, slim CI, state selector, defer, clone, env_var, hooks, run-operation, release track 같은 운영 요소가 함께 들어와야 프로젝트가 계속 살아남는다.
+이 장은 네 개의 큰 흐름으로 진행된다.
 
-이 장은 로컬 검증 루틴에서 시작해 state-aware 실행, CI job 설계, vars와 target을 이용한 환경 분기, 업그레이드 체크리스트까지 이어지는 운영 흐름을 한 챕터로 묶는다. dbt platform의 environments/jobs 관점도 여기에서 함께 읽어 둔다.
+1. 운영을 구조로 바라보는 방법  
+2. state, defer, clone, retry, selectors로 실행 범위를 통제하는 방법  
+3. vars, env_var, hooks, run-operation, packages, 업그레이드 규칙을 운영 관점으로 정리하는 방법  
+4. Retail Orders / Event Stream / Subscription & Billing 세 예제가 실제 운영 단계에서 어떻게 달라지는지 보는 방법
 
-## 6.1. 운영·배포·협업
+![그림 6-1. 로컬 개발에서 배포까지의 운영 루프](../assets/images/ch06_operating-loop.svg)
 
-> **선택** 처음 읽는 사람은 장 끝의 ‘직접 해보기’를 반드시 해 본다. 이해가 아니라 손의 감각을 남기는 것이 목표다.
+*그림 6-1. 로컬 개발에서 배포까지의 운영 루프*
 
-**이 장에서 배우는 것**
+---
 
-- dev/prod 분리와 개인 스키마의 필요성을 이해한다.
-- PR 검증과 배포 실행의 목적이 다르다는 점을 배운다.
-- state:modified+, --defer, dbt clone, dbt retry를 초보자 시각으로 정리한다.
+## 6.1. 운영을 따로 배워야 하는 이유
 
+운영은 “마지막에 붙이는 부가 기능”이 아니다. 오히려 프로젝트가 커질수록 모델 품질을 지키는 첫 번째 방어선이 된다. 예를 들어 두 개발자가 같은 스키마를 쓰고 있고, 변경 범위를 확인하지 않은 채 전체 빌드를 반복하며, secret을 코드에 직접 적고, 업그레이드를 배포 직전에만 떠올린다면 프로젝트는 빠르게 불안정해진다. 반대로 운영 규칙이 잘 잡혀 있으면 모델이 다소 늘어나더라도 프로젝트는 예측 가능한 방식으로 성장한다.
 
+운영을 생각할 때 가장 먼저 구분해야 하는 것은 다음 다섯 가지다.
 
-**완료 기준**
+- **개발 환경과 배포 환경은 목적이 다르다.**
+- **PR 검증과 정식 배포는 속도와 안정성의 우선순위가 다르다.**
+- **모든 변경을 전체 재빌드로 검증할 필요는 없다.**
+- **환경별 차이는 코드 안의 하드코딩이 아니라 선언된 설정으로 관리해야 한다.**
+- **업그레이드는 버전 번호를 바꾸는 행위가 아니라 운영 절차다.**
 
-- 로컬 개발 → PR → CI → 배포 흐름을 설명할 수 있다.
-- slim CI가 왜 빠른지와 defer의 핵심을 이해한다.
-- 실무 도입 초기에 어떤 운영 규칙을 먼저 정해야 하는지 말할 수 있다.
+### 6.1.1. 개인 실습과 팀 운영의 차이
 
-![그림 13-1. 로컬 검증은 좁게, PR은 빠르게, 배포는 안정적으로](../assets/009-그림-13-1-로컬-검증은-좁게-pr은-빠르게-배포는-안정적으로.png)
+혼자 공부할 때는 모델 하나가 잘 만들어지고 결과가 맞으면 큰 진전을 느낀다. 하지만 팀 프로젝트에서는 같은 기준으로는 부족하다. 팀 운영에서는 다음 질문에 대답할 수 있어야 한다.
 
-*그림 13-1. 로컬 검증은 좁게, PR은 빠르게, 배포는 안정적으로*
+- 이 변경은 어느 범위까지 영향을 주는가?
+- 이 PR에서 최소 무엇을 검증해야 하는가?
+- 이 모델이 dev에는 있는데 prod에는 아직 없는가?
+- 이 오류는 코드 문제인가, 환경 문제인가, secret 문제인가?
+- 지난달과 이번달에 같은 job이 왜 다르게 실행됐는가?
 
-### 6.1.1. 개인 실습과 팀 운영의 가장 큰 차이
+즉, 개인 실습은 “한 번 성공하는 경험”이 중요하고, 팀 운영은 “매번 같은 원리로 성공과 실패를 설명할 수 있는 상태”가 중요하다.
 
-혼자 배울 때는 모델이 돌아가기만 해도 충분히 기쁘다. 하지만 팀 프로젝트에서는 반복 가능성, 리뷰 가능성, 배포 안정성이 더 중요해진다. 따라서 일정 수준을 넘기면 좋은 SQL만으로는 부족하고, 브랜치 전략, PR 리뷰, 환경 분리, 문서 유지가 함께 들어온다.
+### 6.1.2. 환경은 보통 세 층으로 생각하면 편하다
 
-### 6.1.2. dev / prod를 머릿속에서 먼저 분리하자
+운영을 처음 배울 때는 환경을 너무 세세하게 쪼개기보다 아래 세 층으로 생각하는 편이 이해하기 쉽다.
 
-| 환경 | 목적 | 권장 습관 |
+| 층 | 대표 환경 | 목적 | 핵심 질문 |
+| --- | --- | --- | --- |
+| 개발 층 | 로컬 CLI, Studio IDE, 개인 schema | 빠른 수정과 반복 실험 | 내가 바꾼 모델을 가장 짧게 검증하려면? |
+| 검증 층 | CI, staging, preview schema | PR 검증, slim CI, 회귀 방지 | 이번 변경이 다른 모델을 깨뜨리지 않았는가? |
+| 배포 층 | production job, scheduled deployment | 안정적 재현과 사용자 제공 | 정해진 시간에 예측 가능한 결과를 만들었는가? |
+
+여기서 중요한 것은 “개발 환경은 빠름”, “검증 환경은 집중”, “배포 환경은 안정”이라는 목적 차이다. 목적이 다르기 때문에 실행 명령도 같을 필요가 없다.
+
+### 6.1.3. dbt platform의 environment를 어떻게 읽을까
+
+dbt platform의 environment는 단순한 접속 설정이 아니다. 운영 관점에서 environment는 최소 세 가지를 동시에 정한다.
+
+1. 어떤 dbt 버전/엔진으로 실행할 것인가  
+2. 어떤 warehouse/database/schema/role에 연결할 것인가  
+3. 어떤 코드 버전을 실행할 것인가
+
+즉, environment는 “어디에 연결할까?”만이 아니라 “무엇으로, 어떤 코드를 실행할까?”까지 함께 정한다. 로컬 CLI에서는 이 세 요소가 각각 Python/dbt 설치, `profiles.yml`, Git branch처럼 흩어져 있지만, dbt platform에서는 environment 단위로 더 명시적으로 관리된다.
+
+### 6.1.4. PR 검증과 배포는 다른 문제를 푼다
+
+PR 검증의 목표는 **빠른 피드백**이다. 그래서 보통 바뀐 모델과 그 downstream 정도만 빠르게 확인하는 slim CI 패턴이 잘 맞는다.
+
+반면 배포 job의 목표는 **안정적인 재현**이다. 배포에서는 스케줄, retries, 알림, docs/source artifacts, 권한, 실패 후 복구까지 함께 생각해야 한다.
+
+이 둘을 같은 명령으로 통일하려는 습관은 운영을 오히려 무겁게 만든다. 예를 들어 PR에서 매번 전체 프로젝트를 재빌드하면 느리고 비싸며, 배포에서 매번 최소 범위만 돌리면 누적 드리프트나 숨은 의존성을 놓칠 수 있다.
+
+### 6.1.5. 운영 초기에 먼저 정할 최소 규칙
+
+아주 작은 팀이라도 아래 규칙은 초반부터 정해두는 편이 좋다.
+
+- 개인 개발은 개인 schema 또는 분리된 dev target에서 실행한다.
+- PR 검증은 변경 범위 중심으로 빠르게 수행한다.
+- 배포 환경은 dev와 다른 schema/role/credentials를 사용한다.
+- 비밀값은 `env_var()`로 분리한다.
+- 실행 패턴은 CLI 한 줄이 아니라 `selectors.yml`, scripts, job 정의로 남긴다.
+- 업그레이드는 production이 아니라 development 환경에서 먼저 검증한다.
+
+---
+
+## 6.2. state, defer, clone, retry를 한 흐름으로 이해하기
+
+앞 장에서 `--select`, `dbt ls`, DAG, layered modeling을 배웠다면, 운영 단계에서는 “무엇을 선택해서 어떻게 실행할 것인가”를 더 정교하게 다룰 수 있어야 한다. 여기서 핵심이 state, defer, clone, retry다.
+
+많은 사람이 이 네 기능을 별개의 옵션으로 외우려 하지만, 실제로는 아래와 같이 한 흐름으로 이해하는 편이 훨씬 쉽다.
+
+- **state**: 무엇이 바뀌었는지 비교한다.
+- **defer**: 지금 환경에 없는 upstream은 기준 환경 것을 참조한다.
+- **clone**: 기준 환경의 객체를 실제로 가져와서 내 환경에 만들어 둔다.
+- **retry**: 직전 실행이 중간에서 깨졌다면 거기서 이어 달린다.
+
+![그림 6-2. state, defer, clone, retry의 관계](../assets/images/ch06_state-defer-clone-map.svg)
+
+*그림 6-2. state, defer, clone, retry의 관계*
+
+### 6.2.1. artifacts가 없으면 state도 없다
+
+state 기반 운영의 출발점은 artifacts다. 특히 다음 파일을 자주 보게 된다.
+
+| artifact | 역할 | 운영에서 중요한 이유 |
 | --- | --- | --- |
-| dev | 개인 실험과 빠른 수정 | 개인 schema를 쓰고 선택 실행 위주로 개발 |
-| prod | 공용 분석 자산 제공 | 더 엄격한 테스트와 권한 정책 적용 |
+| `manifest.json` | 프로젝트 그래프와 node metadata | 변경 비교, docs, selector 해석의 기준 |
+| `run_results.json` | 실행 결과와 상태 | `dbt retry`, 실패 분석, duration 해석 |
+| `sources.json` | source freshness 결과 | `source_status:fresher+` selector의 기반 |
+| `catalog.json` | relation/column 메타데이터 | docs와 metadata 확인 |
+| `semantic_manifest.json` | semantic layer metadata | metric/semantic validation의 기준 |
 
-### 6.1.3. slim CI를 너무 어렵게 생각하지 않기
+실무에서는 “어제의 prod manifest와 오늘의 PR branch를 비교한다”는 식으로 artifacts를 비교 기준으로 삼는다. 그래서 운영 job에서는 artifacts를 언제, 어디에 저장하고 다시 사용할지를 함께 설계해야 한다.
 
-slim CI의 핵심은 ‘바뀐 영역만 빠르게 검증한다’는 데 있다. state:modified+는 현재 프로젝트와 기준 manifest를 비교해 새로 추가되거나 변경된 리소스를 찾고, --defer는 현재 환경에 없는 upstream 모델을 기준 환경의 relation로 참조하게 해 준다.
+### 6.2.2. `state:modified+`는 “이번 PR에서 바뀐 곳”을 좁히는 기본기다
+
+가장 널리 쓰는 패턴은 다음과 같다.
 
 ```bash
 dbt parse
-dbt build --select state:modified+ --defer --state ./state_artifacts
+dbt ls --select state:modified+ --state path/to/prod_artifacts
+dbt build --select state:modified+ --defer --state path/to/prod_artifacts
 ```
 
-프로젝트가 작을 때는 이 패턴이 과하게 느껴질 수 있다. 그 경우에는 핵심 mart나 변경 도메인만 고르는 단순한 CI로 시작해도 된다. 중요한 것은 ‘PR 단계의 목적은 빠른 피드백’이라는 점이다.
+이 패턴의 의미는 다음과 같다.
 
-### 6.1.4. dbt clone과 dbt retry는 언제 떠올리나
+1. 현재 코드와 기준 manifest를 비교한다.
+2. 변경된 노드와 그 downstream을 선택한다.
+3. 지금 내 dev/CI 환경에 없는 upstream은 기준 환경의 relation을 참조한다.
 
-| 명령 | 언제 유용한가 | 초보자 한 줄 해석 |
-| --- | --- | --- |
-| dbt clone | 큰 테이블을 CI/dev 환경으로 빠르게 가져오고 싶을 때 | 실제 재생성 대신 clone materialization을 활용한다 |
-| dbt retry | 직전 실행의 실패 노드만 다시 돌리고 싶을 때 | 대형 배치에서 복구 시간을 줄여 준다 |
+이렇게 하면 PR 단계에서 전체를 다시 만들지 않고도 “내가 바꾼 영역이 downstream을 깨뜨리는지”를 빠르게 볼 수 있다.
 
-### 6.1.5. 운영 초기에 먼저 정할 규칙
+다만 state는 완전무결하지 않다. 예를 들어 아래 같은 상황은 별도 판단이 필요하다.
 
-- 원천을 읽는 첫 모델은 source()를 쓴다.
-- 핵심 키 컬럼에는 generic test를 기본으로 붙인다.
-- staging에서는 집계하지 않고 marts에서 최종 KPI를 만든다.
-- PR 설명에 변경된 모델과 영향 범위를 적는다.
-- 민감 정보는 env_var()로 분리한다.
-- docs와 설명은 모델 추가와 동시에 갱신한다.
+- `env_var()` 값만 바뀌었는데 코드 diff는 작은 경우
+- warehouse 바깥에서 테이블이 drop됐지만 코드에는 변화가 없는 경우
+- seed 외부 입력 데이터가 바뀌었는데 manifest 차이만으로는 충분하지 않은 경우
 
-**작게 시작하는 것이 낫다**
+즉, state selector는 운영의 강력한 기준이지만, 도메인 상식과 보완 규칙이 함께 있어야 한다.
 
-운영 장이라고 해서 처음부터 완벽한 거버넌스를 요구할 필요는 없다. 개인 schema 분리, PR 리뷰, 핵심 테스트, 문서화, slim CI의 뼈대만 잡아도 초기 시행착오가 크게 줄어든다.
+### 6.2.3. `source_status:fresher+`는 데이터 쪽 변화를 끌어온다
 
-**안티패턴**
+코드만 바뀌는 것이 아니라 source freshness 결과가 달라지는 경우도 있다. 이럴 때는 `dbt source freshness`로 만든 `sources.json`을 활용해 다음과 같이 실행할 수 있다.
 
-개발과 배포를 같은 schema에서 처리하고, 에러가 나면 warehouse 크기나 스레드 수부터 키우는 것.
+```bash
+dbt source freshness
+dbt build --select source_status:fresher+ --state path/to/source_artifacts
+```
 
-**직접 해보기**
+이 패턴은 “코드 변경은 없지만 upstream source가 새 데이터를 받았으니 다시 계산해야 하는 모델만 선택하고 싶다”는 요구에 잘 맞는다.
 
-1. 우리 팀에 dev와 prod를 어떻게 나눌지 스키마 이름 예시와 함께 적어 본다.
-2. ‘PR 단계에서 최소 무엇을 돌릴까?’를 한 줄 명령으로 적어 본다.
-3. state:modified+와 --defer가 각각 어떤 문제를 푸는지 한 문장씩 써 본다.
-정답 확인 기준: 운영의 핵심이 기능 개수보다 규칙과 목적의 분리라는 점을 이해하면 성공이다.
+### 6.2.4. defer는 “없는 upstream을 prod에 기대는” 기능이다
 
-**완료 체크리스트**
+defer를 쓰면 지금 target에 없는 upstream relation을 기준 state의 relation로 대신 참조하게 된다. 이게 특히 유용한 순간은 다음과 같다.
 
-- [ ] dev/prod 분리를 설명할 수 있다.
-- [ ] PR CI와 배포 실행의 목적이 다르다는 것을 안다.
-- [ ] state, defer, clone, retry를 어디서 쓸지 감이 생겼다.
+- dev schema에 전체 upstream을 만들고 싶지 않을 때
+- PR 검증에서 바뀐 모델만 빠르게 보고 싶을 때
+- 무거운 mart를 전부 재생성하지 않고 downstream 검증만 하고 싶을 때
 
-## 6.2. Artifacts · State · Slim CI
+예를 들어 내가 `fct_orders`만 수정했는데 그 upstream 전체를 dev에 만들고 싶지는 않다면, `--defer --state prod_artifacts` 조합이 큰 힘을 발휘한다.
 
-| 구분 | 로컬 | dbt platform | 핵심 메모 |
-| --- | --- | --- | --- |
-| 장 16 | state selection, defer, clone, retry 가능 | state-aware orchestration, CI jobs, job metadata와 연결됨 | 같은 개념이 로컬과 플랫폼에서 모두 쓰이지만 자동화 강도는 플랫폼 쪽이 더 높다. |
+```bash
+dbt build \
+  --select state:modified+ \
+  --state path/to/prod_artifacts \
+  --defer
+```
 
-### 6.2.1. artifacts를 읽으면 dbt가 “무슨 생각을 했는지” 보인다
+defer는 대개 clone보다 더 싸고 간단하다. 다만 defer는 **실제 relation을 내 schema에 복제하는 것**이 아니므로, dbt 밖의 도구(BI, notebook, external SQL)에서 바로 확인해야 한다면 clone이 더 나을 수 있다.
 
-dbt는 실행할 때마다 프로젝트 상태를 artifacts로 남긴다. 입문 단계에서는 target/compiled만 보아도 도움이 되지만, 팀 운영 단계로 넘어가면 manifest.json, run_results.json, sources.json, catalog.json을 함께 보는 편이 훨씬 강력하다. 이 파일들은 단순 부산물이 아니라, state comparison, docs, source freshness, CI 재시도와 같은 기능의 기반이 된다.
+### 6.2.5. clone은 “참조” 대신 “실체를 만든다”
 
-*운영 단계에서 자주 보는 artifact*
+`dbt clone`은 기준 state의 selected nodes를 현재 target으로 복제한다. 데이터 플랫폼이 zero-copy clone을 지원하면 매우 빠르게 작동할 수 있고, 그렇지 않은 경우 단순 pointer view로 구현될 수 있다.
 
-| artifact | 주로 어디에 쓰는가 |
-| --- | --- |
-| manifest.json | 프로젝트 그래프, node metadata, state comparison, docs의 중심 메타데이터 |
-| run_results.json | 어떤 node가 성공/실패/스킵되었는지, 소요 시간이 얼마나 걸렸는지 확인 |
-| sources.json | source freshness 결과와 source_status selector의 입력 |
-| catalog.json | dbt docs에서 relation/column 메타데이터 탐색에 사용 |
-
-### 6.2.2. state selector는 “무엇이 바뀌었는가”를 코드 기준으로 좁힌다
-
-state selection은 현재 프로젝트를 이전 manifest와 비교해 새로 생기거나 수정된 리소스를 찾는 기능이다. 로컬 개발에서는 “내가 지금 바꾼 것만 빠르게 검증”하는 데 쓰고, CI에서는 modified 영역과 그 downstream만 빌드하는 slim CI의 핵심이 된다. 다만 vars나 env_var 값의 변경처럼 정적 비교로 완전히 잡히지 않는 경우가 있으므로, state만 맹신하지 말고 도메인 상식과 selector를 함께 써야 한다.
-
-**dbt ls --select state:modified+
-dbt build --select state:modified+
-dbt build --select source_status:fresher+
-# prod artifact를 비교 기준으로 사용할 때
-# dbt build --select state:modified+ --state path/to/prod_artifacts**
-
-### 6.2.3. defer, clone, retry는 큰 프로젝트의 체감 속도를 바꾼다
-
-defer는 현재 환경에 없는 upstream relation을 비교 기준 환경의 relation로 대신 참조하게 하여, 일부 모델만 샌드박스에서 검증하도록 돕는다. clone은 선택한 노드를 state 기준 환경에서 대상 schema로 복제해, 무거운 incremental/table 모델을 굳이 재계산하지 않고도 테스트 환경을 빠르게 마련하게 해 준다. retry는 마지막 명령이 node 일부를 실행한 뒤 중간에서 실패했을 때, 실패 지점부터 다시 이어서 실행하도록 도와 준다.
-
-**dbt build --select state:modified+ --defer --state path/to/prod_artifacts
+```bash
 dbt clone --select tag:heavy --state path/to/prod_artifacts
-dbt retry**
+```
 
-### 6.2.4. selectors.yml로 팀의 공용 실행 패턴을 코드화한다
+clone이 특히 유용한 경우는 다음과 같다.
 
-selector 문법을 매번 CLI에 길게 적는 대신 selectors.yml에 “slim_ci”, “nightly_heavy”, “semantic_refresh” 같은 이름으로 저장하면 팀 공통 실행 패턴을 코드처럼 관리할 수 있다. 이렇게 해 두면 리뷰와 운영 지식이 사람이 아니라 저장소 안에 남는다. beginner 단계에서는 --select를 손으로 익히고, intermediate 이후부터는 공용 selector로 승격하는 식이 가장 자연스럽다.
+- 무거운 incremental 모델을 CI/dev에서 full refresh 없이 다뤄야 할 때
+- BI 도구에서 내 dev schema를 직접 보며 확인해야 할 때
+- blue/green 또는 shadow validation 같은 운영 전략을 쓸 때
 
-**selectors:
+반대로 단순 PR 검증이라면 defer가 더 단순할 때가 많다. clone은 편리하지만 target에 실제 객체를 만들기 때문에 관리 비용을 함께 생각해야 한다.
+
+### 6.2.6. retry는 중간 실패 뒤의 복구 시간을 줄여 준다
+
+긴 job이 거의 끝나갈 때 한 노드가 실패하면 처음부터 다시 돌리는 것이 가장 답답하다. `dbt retry`는 바로 이런 상황을 줄여 준다. `run_results.json`을 기준으로 마지막 명령의 실패 지점부터 다시 시도한다.
+
+```bash
+dbt build --select tag:nightly
+# 중간에 실패
+dbt retry
+```
+
+retry를 쓸 때 기억할 점:
+
+- 직전 명령이 일부 노드를 실행한 뒤 실패해야 의미가 있다.
+- warehouse 권한 문제처럼 초반에 바로 실패했다면 retry가 할 일이 없을 수 있다.
+- retry 전에 **실패 원인을 먼저 고친 뒤** 다시 실행해야 한다.
+
+### 6.2.7. selectors.yml은 팀의 공용 실행 패턴을 저장소 안에 남긴다
+
+운영 지식이 사람 머릿속에만 있으면 팀이 커질수록 불안정해진다. 그래서 반복되는 선택 패턴은 `selectors.yml`로 승격하는 편이 좋다.
+
+```yaml
+selectors:
   - name: slim_ci
+    description: "PR에서 변경된 노드와 downstream만 검증"
     definition: "state:modified+"
+
+  - name: source_refresh
+    description: "freshness가 갱신된 source downstream만 계산"
+    definition: "source_status:fresher+"
+
   - name: nightly_heavy
-    definition: "tag:heavy,tag:nightly"
-  - name: semantic_refresh
-    definition: "path:models/semantic+"**
+    description: "야간에 무거운 모델만 선택"
+    definition: "tag:nightly,tag:heavy"
+```
 
-> 실무 체크포인트: state는 “코드 차이”, defer는 “upstream 대체 참조”, clone은 “비용을 아끼는 빠른 실체 복제”, retry는 “중간 실패 뒤 이어 달리기”라고 기억하면 헷갈림이 크게 줄어든다.
+이렇게 해 두면 CI 스크립트와 job 정의에서 다음처럼 더 짧고 명확한 호출이 가능하다.
 
-## 6.3. Vars · Env · Hooks · Operations · Packages
+```bash
+dbt build --selector slim_ci --state path/to/prod_artifacts --defer
+```
 
-| 구분 | 로컬 | dbt platform | 핵심 메모 |
-| --- | --- | --- | --- |
-| 장 17 | var, env_var, run-operation, packages 가능 | dbt CLI와 Studio IDE에서도 같은 개념을 사용 | packages는 어디서나 쓰지만 project dependencies는 다음 장의 별도 제약을 따른다. |
+### 6.2.8. 로컬 CLI와 dbt platform state-aware orchestration은 같은가?
 
-### 6.3.1. var, env_var, target: “환경별로 다르다”를 프로젝트 안에 선언하는 세 가지 축
+같은 부분도 있고 다른 부분도 있다.
 
-var()는 프로젝트 기본값과 실행 시점 오버라이드를 연결하고, env_var()는 비밀값과 환경별 설정을 외부에서 주입하며, target은 현재 연결된 환경의 database/schema/warehouse 정보를 읽게 해 준다. beginner 단계에서는 profile과 schema 이름 정도만 다루지만, intermediate 이후에는 샘플 기간, feature flag, semantic refresh 여부 같은 것도 var로 제어하는 편이 유용하다.
+로컬 CLI에서 `state:modified+`, `source_status:fresher+`, `--state`, `--defer`를 사용하는 방식은 **artifact 기반**이다. 특정 시점의 artifacts를 비교 기준으로 둔다.
 
-**{{ config(schema=target.schema) }}
+반면 dbt platform의 state-aware orchestration은 environment 차원의 **공유 상태**를 바탕으로 무엇을 다시 빌드할지를 더 지속적으로 판단한다. 이 개념은 비슷하지만, 실행 주체와 상태 저장 방식이 더 중앙집중적이다.
 
-where order_date >= {{ var('start_date', '2026-01-01') }}
+그래서 실무에서는 이렇게 생각하면 편하다.
 
-password: "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PASSWORD') }}"**
+- 로컬/CLI: “이번 한 번의 실행에서 artifacts를 기준으로 똑똑하게 좁힌다.”
+- state-aware orchestration: “환경 단위의 공유 상태를 바탕으로 job이 자동으로 덜 빌드하도록 최적화한다.”
 
-### 6.3.2. hook는 강력하지만, 먼저 built-in config로 해결할 수 없는지 확인한다
+---
 
-pre-hook, post-hook, on-run-start, on-run-end는 표준 materialization과 config만으로 표현하기 어려운 작업을 붙일 때 유용하다. 다만 grants, persist_docs, contracts처럼 이미 dbt가 공식 설정을 제공하는 영역은 hook보다 built-in config를 우선하는 편이 유지보수에 좋다. hook는 “dbt 바깥의 작업을 억지로 우겨 넣는 마법”이 아니라, 꼭 필요한 warehouse-specific 작업을 최소 범위로 수행하는 도구라고 보는 편이 안전하다.
+## 6.3. vars, env_var, hooks, run-operation, packages를 운영 관점으로 묶기
 
-**models:
+이 절의 기능들은 겉보기에는 서로 다르다. 하지만 운영 관점에서 보면 모두 “코드만으로는 다 표현되지 않는 실행 차이”를 관리하는 도구다.
+
+### 6.3.1. `var()`는 실험 파라미터와 기능 분기를 코드 바깥으로 뺀다
+
+`var()`는 프로젝트 안에서 기본값을 정의하고, 실행 시점에 값을 덮어쓸 수 있게 한다. beginner 단계에서는 잘 안 보이지만, 운영 단계에서는 특정 기간만 다시 계산하거나, preview 기능을 켜거나, semantic refresh 대상을 분기할 때 유용하다.
+
+```sql
+select *
+from {{ ref('stg_orders') }}
+where order_date >= {{ var('start_date', "'2026-01-01'") }}
+```
+
+실행할 때는 이렇게 넘길 수 있다.
+
+```bash
+dbt build --vars '{"start_date": "'\''2026-03-01'\''"}'
+```
+
+주의할 점은 var를 **비밀값 저장소처럼 쓰지 말아야 한다**는 점이다. var는 파라미터용이고, 비밀값은 `env_var()`가 맞다.
+
+### 6.3.2. `env_var()`는 환경별 차이와 secret을 분리한다
+
+운영에서 비밀값을 코드에 직접 넣는 것은 피해야 한다. dbt는 `env_var()`를 통해 환경 변수 값을 읽게 할 수 있다.
+
+```yaml
+password: "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PASSWORD') }}"
+```
+
+운영에서 `env_var()`가 중요한 이유는 두 가지다.
+
+1. secret을 Git에 남기지 않는다.
+2. dev / staging / prod의 연결 정보 차이를 코드 바깥에서 제어할 수 있다.
+
+단, `env_var()`도 남용하면 코드가 불투명해진다. 비즈니스 규칙까지 environment variable로 밀어 넣지 말고, secret 또는 명백한 환경 차이만 여기에 두는 편이 좋다.
+
+### 6.3.3. `target`은 현재 내가 어느 환경에서 뛰는지 알려 준다
+
+`target`은 현재 활성화된 target의 정보(database, schema, name 등)를 읽게 해 준다. 예를 들어 schema naming이나 branch별 실험을 다르게 하고 싶을 때 유용하다.
+
+```sql
+{{ config(schema=target.schema) }}
+```
+
+다만 `target.name == 'prod'` 같은 분기를 지나치게 많이 쓰면 코드가 복잡해진다. 환경 차이는 우선 profile/environment 설정으로 해결하고, 모델 로직을 과도하게 갈라야 할 때만 신중하게 쓰는 것이 좋다.
+
+### 6.3.4. hooks는 built-in config로 해결되지 않을 때만 쓴다
+
+hooks는 강력하다. 하지만 강력하다는 말은 “자주 써도 된다”는 뜻이 아니다. 다음 순서로 생각하는 편이 좋다.
+
+1. grants, contracts, persist_docs, materialization, config로 해결 가능한가?
+2. 해결이 안 된다면 hook가 필요한가?
+3. hook가 필요하다면 최소 범위로 작성했는가?
+
+예를 들어 통계 갱신, 권한 부여, warehouse별 analyze 작업은 hook 후보가 될 수 있다.
+
+```yaml
+models:
   my_project:
     marts:
       +post-hook:
         - "analyze table {{ this }} compute statistics"
-
-on-run-end:
-  - "{% for schema in schemas %}grant usage on schema {{ schema }} to role reporter;{% endfor %}"**
-
-### 6.3.3. run-operation은 “모델이 아닌 작업”을 위한 도어다
-
-run-operation은 매크로를 직접 호출해 maintenance SQL이나 관리 작업을 실행할 때 쓴다. 예를 들어 오래된 schema 정리, warehouse 통계 수집, audit 테이블 기록, 버전 전환용 view 재생성 같은 작업이 여기에 해당한다. 모델과 테스트의 책임을 흐리지 않고도 운영 작업을 코드로 남길 수 있다는 점이 장점이다.
-
-**dbt run-operation grant_reporter_access --args '{role: reporter}'
-dbt run-operation cleanup_old_schemas --args '{prefix: dbt_}'**
-
-### 6.3.4. packages.yml과 dependencies.yml을 구분해 생각한다
-
-packages는 재사용 가능한 독립 dbt 프로젝트를 가져와 모델·매크로·tests를 내 프로젝트의 일부처럼 쓰게 해 준다. 반면 project dependencies는 mesh나 cross-project ref처럼 다른 프로젝트를 “소비”하는 관계를 표현하는 데 더 적합하다. 작은 팀에서는 packages만으로도 충분하지만, 프로젝트가 커져 ownership 경계가 생기기 시작하면 dependencies.yml을 고려할 시점이 온다.
-
-**packages:
-  - package: dbt-labs/dbt_utils
-    version: [">=1.2.0", "<2.0.0"]
-
-# dependencies.yml 예시
-projects:
-  - name: finance_core
-    version: ">=1.0.0"**
-
-### 6.3.5. 패키지·매크로·UDF·모델의 경계를 어떻게 잡을까
-
-같은 SQL 조각이 세 번 반복되면 macro 후보, 여러 도구에서 반복 사용할 계산이면 UDF 후보, 결과 relation 자체를 재사용해야 하면 모델 후보, 여러 프로젝트가 함께 써야 하면 package 후보라고 보면 출발점으로 충분하다. “공유할 것”을 무엇으로 공유할지 분류하는 감각이 생기면 프로젝트가 덜 꼬인다.
-
-- 패키지는 문제 영역 단위로 재사용한다. 작은 개인 취향 매크로 모음은 package보다 root project가 낫다.
-- env_var는 secret과 환경별 차이를 관리하는 도구지, 비즈니스 규칙을 숨기는 도구가 아니다.
-- hook는 built-in config보다 우선순위가 낮다. grants·persist_docs·contracts를 hook로 대체하지 않는다.
-
-> 버전/트랙 메모: package와 semantic 관련 기능은 dbt 버전·engine에 따라 문법과 지원 범위가 달라질 수 있으므로, companion pack의 예시는 개념과 뼈대를 익히는 용도로 보고 실제 도입 전에는 현재 사용 중인 track 문서를 다시 확인하는 편이 안전하다.
-
-## 6.4. dbt platform 작업환경 가이드
-
-> dbt platform의 environment / job / interface를 도구 설명이 아니라 운영면으로 읽는다.
-
-### 6.4.1. environment는 세 가지를 정한다
-
-| environment가 정하는 것 | 설명 | 초보자 메모 |
-| --- | --- | --- |
-| dbt 실행 버전/엔진 | 어떤 dbt version 또는 release track, 어떤 engine으로 실행할지 | 로컬과 플랫폼 결과가 다르면 여기부터 본다. |
-| warehouse 연결 정보 | database/schema/role/credentials 등 실행 대상 | dev/prod 분리의 핵심이다. |
-| 실행할 코드 버전 | 어느 branch/commit의 프로젝트를 실행할지 | CI와 배포에서 중요하다. |
-
-dbt platform에서는 Development 환경과 Deployment 환경을 구분해서 생각하는 것이 중요하다. Deployment 환경 안에서도 production / staging / general 성격이 갈릴 수 있으므로, “잡(job)이 어떤 환경을 바라보는가”를 먼저 이해해야 한다.
-
-### 6.4.2. 어떤 인터페이스를 언제 쓸까
-
-| 도구 | 가장 잘하는 일 | 주의점 |
-| --- | --- | --- |
-| Studio IDE | 브라우저에서 바로 build/test/run, Catalog와의 왕복, platform-native 개발 | 로컬 편집기와의 습관 차이를 인정해야 한다. |
-| dbt CLI | 로컬 터미널에서 dbt 명령과 MetricFlow 명령을 동일한 리듬으로 실행 | dbt_cloud.yml 또는 profiles.yml 등 인증 흐름을 먼저 맞춘다. |
-| VS Code extension | Fusion 기반 LSP, 인라인 오류, 리팩터링, hover 정보 | Fusion 전용이며 Core CLI 단독과는 다르다. |
-| Catalog | 동적 문서/lineage/협업 메타데이터 탐색 | dbt Docs 정적 사이트와 목적이 다르다. |
-| dbt Docs | 정적 사이트 생성·호스팅이 쉬운 문서 출력 | 최신 메타데이터 경험은 Catalog 쪽이 더 풍부하다. |
-| Canvas | 시각적 모델 작성과 빠른 초안 제작 | Enterprise 계열 기능이며 모든 팀에 필수는 아니다. |
-
-### 6.4.3. job 설계는 “얼마나 자주, 얼마나 넓게, 누가 소비하나”로 정한다
-
-- CI job: PR 변경분과 downstream만 좁게 build/test한다.
-- Deploy job: production metadata를 남기며 안정적으로 전체 또는 상태 기준 범위를 실행한다.
-- Documentation/metadata job: Catalog를 더 풍부하게 쓰려면 job에서 문서 metadata를 남기는 습관이 필요하다.
-- Semantic export/cache job: saved query exports와 caching을 운영하려면 주기와 freshness를 함께 본다.
-
-**선택 기준
-• local-only: 비용 제어와 자유도가 가장 크지만, 문서/CI/공유 메타데이터는 직접 구축해야 한다.
-• hybrid: 로컬 개발 + platform 배포/문서/CI를 섞는 가장 현실적인 형태다.
-• platform-first: Studio/Catalog/Jobs/Canvas를 한 흐름으로 쓰는 팀에 잘 맞는다.**
-
-## 6.5. 업그레이드·릴리스 트랙·행동 변화 체크리스트
-
-> 버전 변화와 behavior change를 운영 절차로 다룬다.
-
-### 6.5.1. 먼저 support 상태를 읽는 법
-
-| 상태 | 뜻 | 운영 메모 |
-| --- | --- | --- |
-| Active | 일반 버그 수정과 보안 패치가 이어지는 지원 구간 | 가능하면 이 구간을 기준으로 학습/운영한다. |
-| Critical | 보안·설치 이슈 중심의 제한적 지원 구간 | 당장 못 올리더라도 업그레이드 계획을 세워야 한다. |
-| Deprecated | 문서는 남아 있어도 유지보수 기대치가 크게 떨어지는 구간 | 새 기능을 기대하지 말고 마이그레이션을 준비한다. |
-| End of Life | 패치가 더 이상 나오지 않는 구간 | 실운영 장기 유지 대상으로는 피해야 한다. |
-
-### 6.5.2. dbt platform release track을 고르는 기준
-
-| release track | 성격 | 누가 먼저 고려하나 |
-| --- | --- | --- |
-| Latest Fusion | 새 엔진의 최신 build를 가장 먼저 받는 축 | Fusion 실험과 최신 기능 추적이 중요한 팀 |
-| Latest | dbt platform의 최신 기능을 가장 빠르게 받는 축 | 새 기능을 빨리 쓰고 싶은 팀 |
-| Compatible | 최근 dbt Core 공개 버전과의 호환성을 더 중시하는 월간 cadence | Core와 platform을 함께 쓰는 hybrid 팀 |
-| Extended | Compatible보다 한 단계 더 완만한 cadence | 변화 흡수가 느린 엔터프라이즈 팀 |
-| Fallback | 가장 느린 cadence 계열 | 변경 리스크를 최소화해야 하는 팀 |
-
-### 6.5.3. behavior changes와 deprecations는 같은 것이 아니다
-
-behavior change flags는 새 기본 동작으로 넘어가기 전의 이행 창구에 가깝고, deprecations는 앞으로 제거될 문법/행동을 경고하는 신호에 가깝다. 둘 다 “나중에 보자”로 미루기 쉬운데, 실제로는 버전 업그레이드 품질의 절반이 여기서 갈린다.
-
-```text
-# dbt_project.yml
-flags:
-require_generic_test_arguments_property: true
-state_modified_compare_more_unrendered_values: true
 ```
 
-- 업그레이드는 dev 환경에서 먼저 시도하고, selectors로 범위를 좁혀 smoke test를 돈다.
-- deprecation 경고는 릴리스 직전이 아니라 분기 초반에 정리해야 팀 전체 비용이 낮다.
-- packages와 adapter의 require-dbt-version 조건도 함께 확인한다.
+운영에서 hook의 위험은 “어디서 무슨 SQL이 추가로 돌았는지 모르게 되는 것”이다. 그래서 hook는 적고, 짧고, 명확해야 한다.
 
-### 6.5.4. 운영 장을 읽을 때의 관점
+### 6.3.5. `run-operation`은 모델이 아닌 운영 작업을 코드화한다
 
-운영 파트는 기능을 더 붙이는 장이 아니라, 이미 만든 프로젝트를 어떻게 느리게 망가지지 않게 만들 것인가를 다루는 장이다. state/defer/clone은 속도를, vars/env/hooks는 환경 분기를, release track과 upgrade checklist는 변화 관리를, dbt platform 작업환경은 팀의 실행면을 설명한다. 뒤의 플랫폼 플레이북에서는 같은 운영 원칙이 각 플랫폼에서 어떤 형태로 구현되는지도 함께 다시 본다.
+모델은 relation을 만들기 위한 것이고, `run-operation`은 **모델이 아닌 관리 작업**을 위한 도구다. 오래된 dev schema 정리, grants 재적용, audit row 삽입, migration helper 등이 대표적이다.
 
-| 운영 질문 | 먼저 확인할 장치 |
-| --- | --- |
-| PR에서 필요한 것만 빠르게 검증하고 싶다 | state:modified+, defer, clone, selectors.yml |
-| 환경별 schema/target을 깔끔하게 분리하고 싶다 | target, var, env_var, profiles / platform environments |
-| 업그레이드 때 어디가 깨질지 두렵다 | release track, deprecations, behavior changes checklist |
-| 동일한 실행 패턴을 팀 공용 규칙으로 만들고 싶다 | selectors.yml, job templates, run-operation helpers |
+```bash
+dbt run-operation grant_reporter_access --args '{"role": "reporter"}'
+dbt run-operation cleanup_old_schemas --args '{"prefix": "dbt_"}'
+```
+
+이 기능을 잘 쓰면 “운영 절차가 위키 문서에만 있는 상태”를 줄이고, dbt project 안에 실행 가능한 형태로 남길 수 있다.
+
+### 6.3.6. packages는 재사용 자산이고, project dependencies는 운영 경계다
+
+운영 초반에는 패키지 사용만으로도 충분한 경우가 많다. 예를 들어 `dbt_utils` 같은 패키지는 매크로와 tests를 재사용하게 해 준다.
+
+```yaml
+packages:
+  - package: dbt-labs/dbt_utils
+    version: [">=1.2.0", "<2.0.0"]
+```
+
+반면 ownership 경계가 생기고, 다른 팀 프로젝트의 published asset을 참조해야 하는 규모라면 project dependencies와 mesh를 별도로 생각할 시점이 온다. 이 책에서는 mesh 자체는 다음 장에서 더 자세히 다루지만, 여기서는 packages와 운영 경계가 다르다는 정도만 먼저 잡아두면 충분하다.
+
+---
+
+## 6.4. 업그레이드와 release track을 운영 절차로 보기
+
+업그레이드는 “버전 번호를 올린다”가 아니라 “새 동작을 어디에서 먼저 검증하고 언제 production에 반영할지 정한다”는 절차다.
+
+### 6.4.1. 업그레이드를 production에서 처음 하면 안 되는 이유
+
+dbt 버전이 바뀌면 다음 요소가 함께 흔들릴 수 있다.
+
+- parser 동작
+- selector/state 비교 방식
+- artifacts 스키마 버전
+- adapter 지원 범위
+- package 호환성
+- behavior change defaults
+
+그래서 업그레이드는 보통 다음 순서가 안전하다.
+
+1. development 환경에서 parse/build/test/docs를 먼저 확인한다.
+2. slim CI 또는 staging 환경에서 변경 범위를 검증한다.
+3. production job에 반영하기 전에 deprecations와 behavior change를 점검한다.
+4. artifacts 호환성과 state 기준 파일을 새 버전으로 다시 정리한다.
+
+### 6.4.2. release track은 “릴리스 리듬”을 정한다
+
+dbt platform에서는 version pinning 대신 release track 관점으로 운영할 수 있다. 중요한 점은 모든 팀이 같은 리듬을 택할 필요가 없다는 것이다.
+
+- 빠른 기능 수용이 중요하면 Latest 쪽
+- 좀 더 완만한 cadence가 필요하면 Compatible / Extended
+- production은 더 보수적이고, development는 더 빠르게 실험할 수도 있다
+
+핵심은 “개발과 배포를 같은 릴리스 리듬으로 반드시 묶어야 한다”가 아니라, **업그레이드 검증이 가능한 cadence**를 택하는 것이다.
+
+### 6.4.3. behavior change flags는 migration window다
+
+behavior change는 일반 deprecation과 다르다. 코드가 곧장 깨지는 것이 아니라, 런타임 동작이 바뀌는 전환 구간을 제공한다. 운영 관점에서 behavior change를 볼 때 중요한 질문은 다음이다.
+
+- 이 플래그는 dev에서 먼저 켜 볼 것인가?
+- CI에서 legacy/new behavior를 어느 시점까지 병행 확인할 것인가?
+- production 반영 시점은 언제인가?
+- package와 adapter가 이 동작을 감당하는가?
+
+### 6.4.4. 업그레이드 체크리스트
+
+아래 네 단계를 매번 반복하는 체크리스트로 두면 좋다.
+
+1. `dbt deps`, `dbt parse`, `dbt build`가 development에서 통과하는가  
+2. packages, adapter, artifacts schema가 새 버전과 호환되는가  
+3. behavior change / deprecation warning이 있는가  
+4. production용 state artifacts와 CI 기준 경로를 새 버전 기준으로 갱신했는가
+
+---
+
+## 6.5. 세 예제 트랙에서 운영이 어떻게 달라지는가
+
+이제 앞에서 설명한 원리를 세 예제 트랙에 연결해 보자. 이 절의 목적은 “운영 기능을 많이 아는 것”이 아니라, **같은 운영 원리가 도메인마다 어떤 다른 압력으로 나타나는지**를 이해하는 데 있다.
+
+### 6.5.1. Retail Orders: 안정성과 설명 가능성이 우선인 운영
+
+Retail Orders 트랙에서는 보통 다음 요구가 핵심이다.
+
+- 주문/매출 관련 지표가 매일 같은 방식으로 산출되어야 한다.
+- downstream BI와 리포트가 안정적이어야 한다.
+- 변경이 있어도 설명 가능해야 한다.
+
+그래서 Retail Orders에서는 다음 운영 패턴이 잘 맞는다.
+
+- PR에서는 `state:modified+ --defer`로 변경된 mart와 downstream만 빠르게 검증한다.
+- 배포에서는 핵심 fact/dim에 대해 좀 더 보수적인 `dbt build`를 유지한다.
+- source freshness나 daily batch의 도착 시점이 분명하다면 `source_status:fresher+`를 보조적으로 활용한다.
+- grants, docs, contracts 같은 “소비자 신뢰” 관련 운영 규칙이 중요해진다.
+
+예를 들어 `fct_orders`를 수정하는 PR이라면:
+
+```bash
+dbt build --select state:modified+ --state path/to/prod_artifacts --defer
+```
+
+이 명령만으로도 upstream 전부를 dev에 만들지 않고 downstream 회귀를 빠르게 볼 수 있다.
+
+### 6.5.2. Event Stream: 비용·속도·증분 처리 압력이 큰 운영
+
+Event Stream 트랙은 append-heavy, volume-heavy 경향이 강하므로 운영에서 특히 중요한 것은 다음이다.
+
+- incremental/full refresh 판단
+- 무거운 모델을 매번 다시 만들지 않는 전략
+- data arrival 지연과 backfill 대응
+- CI 비용 통제
+
+이 트랙에서는 clone과 state 전략의 체감 가치가 더 크다. 예를 들어 무거운 sessionization mart를 PR마다 full refresh하면 너무 비싸다면, production artifacts를 기준으로 clone 후 변경된 downstream만 검증하는 패턴을 고려할 수 있다.
+
+```bash
+dbt clone --select tag:heavy --state path/to/prod_artifacts
+dbt build --select state:modified+ --state path/to/prod_artifacts --defer
+```
+
+또한 vars를 이용해 개발 시점에는 작은 시간 창만 계산하는 것도 자주 쓰인다.
+
+```bash
+dbt build --vars '{"start_date": "'\''2026-04-01'\''"}'
+```
+
+### 6.5.3. Subscription & Billing: 환경 차이와 버전 안정성이 더 민감한 운영
+
+Subscription & Billing 트랙은 상태 변화, billing logic, lifecycle transition이 얽혀 있어 “동일한 로직을 얼마나 안정적으로 반복 재현할 수 있는가”가 중요하다.
+
+이 트랙에서는 특히 다음 운영 요소가 중요하다.
+
+- var와 env_var를 통한 기간/환경/secret 분리
+- snapshot 및 semantic layer 이후의 변경 영향 추적
+- upgrade 시 behavior change가 billing logic에 미치는 영향 검토
+- run-operation으로 migration helper나 grants를 코드화하는 전략
+
+예를 들어 billing cutoff date를 var로 주입하고, credentials는 env_var로 분리하는 패턴은 실무에서 꽤 흔하다.
+
+```sql
+where billing_month >= {{ var('billing_month_start', "'2026-01-01'") }}
+```
+
+```yaml
+password: "{{ env_var('DBT_ENV_SECRET_BILLING_PASSWORD') }}"
+```
+
+이 트랙은 “코드는 적게 바꿨는데 결과 의미는 크게 바뀌는” 사례가 많기 때문에, 업그레이드와 behavior change를 dev/staging에서 먼저 검증하는 규율이 특히 중요하다.
+
+---
+
+## 6.6. 운영 runbook: 상황별로 어디부터 볼까
+
+운영 단계에서 자주 만나는 상황을 짧은 runbook으로 정리하면 다음과 같다.
+
+### 상황 1. PR 검증이 너무 느리다
+먼저 볼 것:
+- 전체 빌드를 돌리고 있지 않은가
+- `state:modified+`와 `--defer`를 쓸 수 없는가
+- `selectors.yml`로 slim CI를 공용 패턴으로 만들었는가
+
+### 상황 2. dev에 없는 upstream 때문에 downstream 검증이 어렵다
+먼저 볼 것:
+- `--defer --state prod_artifacts`를 쓸 수 있는가
+- BI/외부 도구에서 직접 확인이 필요하다면 clone이 더 나은가
+
+### 상황 3. 긴 야간 배치가 중간에서 실패했다
+먼저 볼 것:
+- `run_results.json`이 남아 있는가
+- 실패 원인을 고친 뒤 `dbt retry`가 가능한가
+- 같은 문제가 반복된다면 selector를 더 쪼개야 하는가
+
+### 상황 4. secret과 환경 차이가 뒤섞여 있다
+먼저 볼 것:
+- hard-coded password나 schema가 없는가
+- `env_var()`와 profile/environment 설정으로 분리할 수 있는가
+- 비즈니스 규칙까지 env_var로 감추고 있지는 않은가
+
+### 상황 5. 업그레이드가 두렵다
+먼저 볼 것:
+- development 환경에서 먼저 검증하고 있는가
+- deprecations와 behavior changes를 따로 보고 있는가
+- CI 기준 artifacts와 production artifacts가 새 버전에 맞는가
+
+---
+
+## 6.7. 운영 안티패턴 아틀라스
+
+운영 장에서는 “무엇을 해야 하는가”만큼 “무엇을 피해야 하는가”도 중요하다.
+
+### 안티패턴 1. dev와 prod를 같은 schema에서 돌린다
+문제:
+- 우발적 overwrite
+- 설명 불가능한 결과
+- 재현성 붕괴
+
+### 안티패턴 2. PR에서도 항상 전체 build를 돌린다
+문제:
+- 느리고 비싸다
+- 실패 범위를 좁히기 어렵다
+- slim CI의 이점을 놓친다
+
+### 안티패턴 3. state selector만 맹신한다
+문제:
+- 외부 데이터 변화나 env 차이를 놓칠 수 있다
+- 운영 상식과 병행하지 않으면 맹점이 생긴다
+
+### 안티패턴 4. env_var에 비즈니스 로직을 숨긴다
+문제:
+- 코드 리뷰로 판단하기 어려워진다
+- 환경 재현성이 떨어진다
+
+### 안티패턴 5. hook를 만능 도구처럼 쓴다
+문제:
+- 실제 실행 SQL이 숨어버린다
+- grants, docs, contracts 같은 built-in config를 우회하게 된다
+
+### 안티패턴 6. 업그레이드를 production에서 처음 검증한다
+문제:
+- 실패 시 영향 범위가 가장 크다
+- deprecation/behavior change를 늦게 발견한다
+
+---
+
+## 6.8. 직접 해보기
+
+### 실습 1. slim CI selector 만들기
+`codes/04_chapter_snippets/ch06/selectors.yml`을 열어 `slim_ci`, `source_refresh`, `nightly_heavy` selector를 읽고, 내 프로젝트 이름에 맞게 정의를 조정해 본다.
+
+### 실습 2. defer와 clone 비교하기
+아래 두 명령을 각각 읽고, “실제 객체를 만들지 않는 것”과 “실제 객체를 만들어 두는 것”의 차이를 설명해 본다.
+
+```bash
+dbt build --select state:modified+ --state path/to/prod_artifacts --defer
+dbt clone --select tag:heavy --state path/to/prod_artifacts
+```
+
+### 실습 3. env_var와 var를 구분해 보기
+`start_date`는 var로, password는 env_var로 분리해야 하는 이유를 한 문단으로 적어 본다.
+
+### 실습 4. 업그레이드 순서 작성하기
+내 팀이 development → staging → production 순서로 업그레이드한다면, 각 단계에서 어떤 명령을 최소로 돌릴지 네 줄로 적어 본다.
+
+---
+
+## 6.9. 완료 체크리스트
+
+- [ ] 개발 환경, 검증 환경, 배포 환경의 목적 차이를 설명할 수 있다.
+- [ ] `state`, `defer`, `clone`, `retry`가 각각 어떤 문제를 푸는지 말할 수 있다.
+- [ ] `var`, `env_var`, `target`의 역할을 구분할 수 있다.
+- [ ] hook보다 built-in config를 먼저 고려해야 하는 이유를 이해한다.
+- [ ] packages와 운영 경계를 섞지 않아야 하는 이유를 안다.
+- [ ] 업그레이드를 production에서 처음 하면 안 되는 이유를 설명할 수 있다.
+- [ ] Retail Orders / Event Stream / Subscription & Billing 세 예제에서 운영 압력이 어떻게 다른지 구분할 수 있다.
+
+---
+
+## 6.10. 이 장의 핵심 정리
+
+이 장의 핵심은 기능 이름을 외우는 것이 아니다. 운영은 결국 다음 한 줄로 요약된다.
+
+> **개발은 빠르게, PR은 좁게, 배포는 안정적으로, 업그레이드는 단계적으로.**
+
+dbt 프로젝트가 커질수록 중요한 것은 “더 많은 명령을 아는가”보다, **어떤 환경에서 무엇을 기준으로 어디까지 실행할지 결정하는 감각**이다. state/defer/clone/retry, var/env_var/hook/run-operation, environments/jobs/release tracks는 모두 그 감각을 구현하는 서로 다른 도구다. 다음 장에서는 이 운영 기반 위에 governance, contracts, versions, metadata 같은 더 강한 팀 경계를 얹는다.

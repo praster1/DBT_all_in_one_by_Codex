@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+<defs>
+  <style>
+    .bg { fill: #ffffff; }
+    .title { font: 700 34px 'Arial'; fill: #0f172a; }
+    .label { font: 600 22px 'Arial'; fill: #0f172a; }
+    .text { font: 400 18px 'Arial'; fill: #334155; }
+    .small { font: 400 16px 'Arial'; fill: #475569; }
+    .card { fill: #f8fafc; stroke: #cbd5e1; stroke-width: 2; rx: 20; ry: 20; }
+    .accent1 { fill: #e0f2fe; stroke: #38bdf8; }
+    .accent2 { fill: #ecfccb; stroke: #84cc16; }
+    .accent3 { fill: #fef3c7; stroke: #f59e0b; }
+    .accent4 { fill: #fee2e2; stroke: #f87171; }
+    .arrow { stroke: #64748b; stroke-width: 4; fill: none; marker-end: url(#arrowhead); }
+    .dash { stroke-dasharray: 10 8; }
+  </style>
+  <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto">
+    <path d="M0,0 L12,6 L0,12 z" fill="#64748b"/>
+  </marker>
+</defs>
+<rect class="bg" width="1280" height="760"/>
+<text x="70" y="70" class="title">Chapter 06 · 로컬 개발에서 배포까지의 운영 루프</text>
+
+<rect x="70" y="140" width="220" height="150" class="card accent1"/>
+<text x="100" y="185" class="label">1. Local Dev</text>
+<text x="100" y="220" class="text">• 개인 schema / dev target</text>
+<text x="100" y="248" class="text">• dbt ls / build / show</text>
+<text x="100" y="276" class="text">• 작은 범위 반복 실행</text>
+
+<rect x="370" y="140" width="220" height="150" class="card accent2"/>
+<text x="398" y="185" class="label">2. Pull Request</text>
+<text x="398" y="220" class="text">• 변경 범위 설명</text>
+<text x="398" y="248" class="text">• selector / state 기준 검증</text>
+<text x="398" y="276" class="text">• 빠른 피드백</text>
+
+<rect x="670" y="140" width="220" height="150" class="card accent3"/>
+<text x="700" y="185" class="label">3. CI / Preview</text>
+<text x="700" y="220" class="text">• state:modified+</text>
+<text x="700" y="248" class="text">• --defer / clone</text>
+<text x="700" y="276" class="text">• staging schema</text>
+
+<rect x="970" y="140" width="220" height="150" class="card accent4"/>
+<text x="996" y="185" class="label">4. Deploy Job</text>
+<text x="996" y="220" class="text">• scheduled build</text>
+<text x="996" y="248" class="text">• docs / sources artifacts</text>
+<text x="996" y="276" class="text">• retries / notifications</text>
+
+<path d="M290 215 L370 215" class="arrow"/>
+<path d="M590 215 L670 215" class="arrow"/>
+<path d="M890 215 L970 215" class="arrow"/>
+
+<rect x="140" y="390" width="1000" height="250" class="card"/>
+<text x="180" y="435" class="label">운영을 지탱하는 공통 축</text>
+<text x="180" y="480" class="text">• Artifacts: manifest.json / run_results.json / sources.json / catalog.json / semantic_manifest.json</text>
+<text x="180" y="515" class="text">• Environment: dbt version / warehouse connection / code version</text>
+<text x="180" y="550" class="text">• Execution Rules: selectors.yml / vars / env_var / hooks / run-operation</text>
+<text x="180" y="585" class="text">• Upgrade Rules: release track / deprecations / behavior changes / adapter compatibility</text>
+<text x="180" y="620" class="small">핵심 원리: 개발은 빠르게, PR은 좁게, 배포는 안정적으로, 업그레이드는 단계적으로.</text>
+
+<path d="M590 290 L590 390" class="arrow dash"/>
+</svg>
