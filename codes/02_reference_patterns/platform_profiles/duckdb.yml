@@ -1,0 +1,7 @@
+dbt_all_in_one_lab:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ./lab.duckdb
+      threads: 4

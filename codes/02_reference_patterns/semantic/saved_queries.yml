@@ -1,0 +1,14 @@
+saved_queries:
+  - name: revenue_by_segment_90d
+    query_params:
+      metrics: [revenue]
+      group_by:
+        - Dimension('customer_segment')
+        - TimeDimension('order_date', 'month')
+      where: "order_date >= dateadd(day, -90, current_date)"
+
+  - name: mrr_by_plan
+    query_params:
+      metrics: [mrr]
+      group_by:
+        - Dimension('plan_id')

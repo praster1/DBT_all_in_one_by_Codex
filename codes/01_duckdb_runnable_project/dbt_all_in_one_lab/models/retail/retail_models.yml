@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: stg_orders
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: order_status
+        data_tests:
+          - accepted_values:
+              values: ['placed', 'shipped', 'delivered']
+  - name: fct_orders
+    columns:
+      - name: order_id
+        data_tests: [not_null, unique]
+      - name: customer_id
+        data_tests:
+          - relationships:
+              to: ref('dim_customers')
+              field: customer_id
+
+unit_tests:
+  - name: fct_orders_sums_line_amount
+    model: fct_orders
+    given:
+      - input: ref('int_order_lines')
+        rows:
+          - {order_id: 1, customer_id: 10, order_date: '2026-01-01', line_amount: 100, quantity: 1}
+          - {order_id: 1, customer_id: 10, order_date: '2026-01-01', line_amount: 40, quantity: 2}
+    expect:
+      rows:
+        - {order_id: 1, customer_id: 10, order_date: '2026-01-01', gross_revenue: 140, item_count: 3}
+
+exposures:
+  - name: retail_revenue_dashboard
+    type: dashboard
+    owner:
+      name: analytics
+      email: analytics@example.com
+    depends_on:
+      - ref('fct_orders')

@@ -1,0 +1,3 @@
+{"invoice_id": "inv_1", "subscription_id": "sub_1", "invoice_date": "2026-04-01", "amount": 49}
+{"invoice_id": "inv_2", "subscription_id": "sub_2", "invoice_date": "2026-04-01", "amount": 199}
+{"invoice_id": "inv_3", "subscription_id": "sub_3", "invoice_date": "2026-04-01", "amount": 0}

@@ -1,0 +1,12 @@
+my_postgres:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: localhost
+      port: 5432
+      dbname: analytics
+      schema: dbt_dev
+      user: analytics
+      password: "{{ env_var('DBT_ENV_SECRET_PG_PASSWORD') }}"
+      sslmode: prefer

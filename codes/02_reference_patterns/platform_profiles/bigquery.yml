@@ -1,0 +1,11 @@
+my_bigquery:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: my-project
+      dataset: analytics
+      keyfile: /path/to/keyfile.json
+      location: US
+      threads: 4

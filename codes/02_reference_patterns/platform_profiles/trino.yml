@@ -1,0 +1,12 @@
+trino_lab:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: trino
+      host: localhost
+      port: 8080
+      database: memory
+      schema: raw_retail
+      threads: 4

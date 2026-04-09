@@ -1,0 +1,11 @@
+my_clickhouse:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      host: localhost
+      port: 8123
+      schema: default
+      user: default
+      password: ""
+      threads: 4

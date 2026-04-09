@@ -1,0 +1,4 @@
+invoice_id,subscription_id,invoice_date,amount
+inv_1,sub_1,2026-04-01,49
+inv_2,sub_2,2026-04-01,199
+inv_3,sub_3,2026-04-01,0

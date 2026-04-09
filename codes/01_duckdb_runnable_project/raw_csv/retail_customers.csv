@@ -1,0 +1,4 @@
+customer_id,first_name,last_name,customer_segment,signup_date,country_code
+101,Mina,Kim,vip,2025-11-03,KR
+102,Jin,Park,regular,2026-01-05,KR
+103,Alex,Cho,regular,2026-01-18,US

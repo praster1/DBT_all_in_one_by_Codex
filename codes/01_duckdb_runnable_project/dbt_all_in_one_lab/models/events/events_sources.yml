@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: raw_events
+    schema: raw_events
+    tables:
+      - name: users
+      - name: events

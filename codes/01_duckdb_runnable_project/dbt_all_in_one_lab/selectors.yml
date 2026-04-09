@@ -1,0 +1,7 @@
+selectors:
+  - name: retail_only
+    definition: "path:models/retail+"
+  - name: events_ci
+    definition: "path:models/events+,test_type:generic"
+  - name: subscription_snapshot
+    definition: "path:snapshots/subscriptions_status_snapshot.sql"

@@ -1,0 +1,6 @@
+# cross-project reference 예시
+projects:
+  - name: finance_core
+    version: ">=1.2.0"
+  - name: product_analytics
+    version: ">=1.0.0"

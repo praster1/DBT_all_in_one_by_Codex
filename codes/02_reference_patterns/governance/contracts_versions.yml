@@ -1,0 +1,34 @@
+version: 2
+
+groups:
+  - name: finance
+    owner:
+      name: finance-data
+      email: finance-data@example.com
+
+models:
+  - name: fct_orders
+    config:
+      access: public
+      group: finance
+      contract:
+        enforced: true
+      grants:
+        select: ['reporter', 'bi_reader']
+    columns:
+      - name: order_id
+        data_type: bigint
+        constraints:
+          - type: not_null
+      - name: gross_revenue
+        data_type: numeric
+
+  - name: fct_mrr
+    latest_version: 2
+    versions:
+      - v: 1
+        deprecation_date: 2026-12-31
+      - v: 2
+    config:
+      access: public
+      group: finance

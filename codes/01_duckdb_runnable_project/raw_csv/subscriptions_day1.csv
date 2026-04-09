@@ -1,0 +1,4 @@
+subscription_id,account_id,plan_id,status,started_at,cancelled_at,monthly_amount,updated_at
+sub_1,7001,starter,active,2026-01-01,,49,2026-04-01 00:00:00
+sub_2,7002,growth,active,2026-02-01,,199,2026-04-01 00:00:00
+sub_3,7003,enterprise,trialing,2026-03-20,,799,2026-04-01 00:00:00

@@ -1,0 +1,37 @@
+name: dbt_all_in_one_lab
+version: 1.0.0
+config-version: 2
+profile: dbt_all_in_one_lab
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+snapshot-paths: ["snapshots"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+models:
+  dbt_all_in_one_lab:
+    retail:
+      staging:
+        +materialized: view
+      intermediate:
+        +materialized: view
+      marts:
+        +materialized: table
+    events:
+      staging:
+        +materialized: view
+      marts:
+        +materialized: incremental
+    subscription:
+      staging:
+        +materialized: view
+      marts:
+        +materialized: table
+
+snapshots:
+  dbt_all_in_one_lab:
+    +target_schema: snapshots
+
+vars:
+  start_date: '2026-04-01'

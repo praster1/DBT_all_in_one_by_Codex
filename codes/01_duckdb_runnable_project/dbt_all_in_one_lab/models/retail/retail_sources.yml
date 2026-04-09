@@ -1,0 +1,14 @@
+version: 2
+
+sources:
+  - name: raw_retail
+    schema: raw_retail
+    tables:
+      - name: customers
+      - name: products
+      - name: order_items
+      - name: orders
+        loaded_at_field: updated_at
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 48, period: hour}

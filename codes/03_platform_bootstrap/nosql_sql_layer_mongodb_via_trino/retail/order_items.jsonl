@@ -1,0 +1,6 @@
+{"order_item_id": 1, "order_id": 5001, "product_id": 1001, "quantity": 1, "unit_price": 18.0}
+{"order_item_id": 2, "order_id": 5001, "product_id": 1003, "quantity": 2, "unit_price": 12.0}
+{"order_item_id": 3, "order_id": 5002, "product_id": 1002, "quantity": 3, "unit_price": 5.0}
+{"order_item_id": 4, "order_id": 5003, "product_id": 1001, "quantity": 1, "unit_price": 18.0}
+{"order_item_id": 5, "order_id": 5003, "product_id": 1002, "quantity": 2, "unit_price": 5.5}
+{"order_item_id": 6, "order_id": 5004, "product_id": 1003, "quantity": 1, "unit_price": 12.0}

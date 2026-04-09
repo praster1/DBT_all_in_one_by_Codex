@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: fct_mrr
+    columns:
+      - name: plan_id
+        data_tests:
+          - relationships:
+              to: ref('dim_plans')
+              field: plan_id
+
+unit_tests:
+  - name: fct_mrr_sums_active_amount
+    model: fct_mrr
+    given:
+      - input: ref('stg_subscriptions')
+        rows:
+          - {subscription_id: 'a', account_id: 1, plan_id: 'starter', subscription_status: 'active', started_at: '2026-01-01', cancelled_at_raw: '', monthly_amount: 49}
+          - {subscription_id: 'b', account_id: 2, plan_id: 'starter', subscription_status: 'cancelled', started_at: '2026-01-01', cancelled_at_raw: '2026-02-01', monthly_amount: 49}
+    expect:
+      rows:
+        - {plan_id: 'starter', active_subscriptions: 1, mrr: 49}

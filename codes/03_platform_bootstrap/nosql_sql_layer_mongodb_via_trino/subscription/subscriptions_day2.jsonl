@@ -1,0 +1,3 @@
+{"subscription_id": "sub_1", "account_id": 7001, "plan_id": "growth", "status": "active", "started_at": "2026-01-01", "cancelled_at": null, "monthly_amount": 199, "updated_at": "2026-04-05 00:00:00"}
+{"subscription_id": "sub_2", "account_id": 7002, "plan_id": "growth", "status": "cancelled", "started_at": "2026-02-01", "cancelled_at": "2026-04-05", "monthly_amount": 199, "updated_at": "2026-04-05 00:00:00"}
+{"subscription_id": "sub_3", "account_id": 7003, "plan_id": "enterprise", "status": "active", "started_at": "2026-03-20", "cancelled_at": null, "monthly_amount": 799, "updated_at": "2026-04-05 00:00:00"}

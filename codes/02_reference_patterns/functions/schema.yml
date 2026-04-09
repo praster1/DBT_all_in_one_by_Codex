@@ -1,0 +1,6 @@
+functions:
+  - name: is_positive_int
+    description: "양의 정수 문자열 여부 검사"
+    config:
+      schema: utility
+      alias: is_positive_int

@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: raw_billing
+    schema: raw_billing
+    tables:
+      - name: accounts
+      - name: plans
+      - name: subscriptions
+      - name: invoices

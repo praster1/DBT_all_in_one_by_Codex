@@ -1,0 +1,10 @@
+my_mysql:
+  target: dev
+  outputs:
+    dev:
+      type: mysql
+      server: localhost
+      port: 3306
+      schema: analytics
+      username: analytics
+      password: "{{ env_var('DBT_ENV_SECRET_MYSQL_PASSWORD') }}"

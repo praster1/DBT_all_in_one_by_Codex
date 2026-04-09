@@ -1,0 +1,5 @@
+# 참고: runnable path는 외부 package 없이도 동작하도록 구성했습니다.
+# 필요하면 아래처럼 추가하세요.
+# packages:
+#   - package: dbt-labs/dbt_utils
+#     version: [">=1.2.0", "<2.0.0"]

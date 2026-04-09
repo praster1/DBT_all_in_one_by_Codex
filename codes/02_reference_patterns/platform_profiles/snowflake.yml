@@ -1,0 +1,13 @@
+my_snowflake:
+  target: dev
+  outputs:
+    dev:
+      type: snowflake
+      account: acme.ap-northeast-2
+      user: analytics_user
+      password: "{{ env_var('DBT_ENV_SECRET_SNOWFLAKE_PASSWORD') }}"
+      role: transformer
+      database: ANALYTICS
+      warehouse: TRANSFORMING_WH
+      schema: DBT_DEV
+      threads: 4
