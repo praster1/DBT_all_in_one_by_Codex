@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<rect width="1200" height="760" fill="#0f172a"/>
+<text x="70" y="70" font-family="Arial, sans-serif" font-size="30" fill="#f8fafc" font-weight="700">Trino merge error diagnosis</text>
+<text x="70" y="110" font-family="Arial, sans-serif" font-size="18" fill="#94a3b8">dbt_internal_source.id / dbt_internal_dest.id 오류는 서로 다른 관찰 지점을 요구한다</text>
+
+<rect x="80" y="170" rx="16" ry="16" width="460" height="220" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<text x="110" y="215" font-family="Arial, sans-serif" font-size="24" fill="#f8fafc" font-weight="700">source-side key 오류</text>
+<text x="110" y="260" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">증상: dbt_internal_source.id cannot be resolved</text>
+<text x="110" y="300" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">1) target/compiled 의 최종 SELECT 확인</text>
+<text x="110" y="333" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">2) 모든 분기에서 id 컬럼이 살아 있는지 확인</text>
+<text x="110" y="366" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">3) if execute / else 스키마 불일치 확인</text>
+
+<rect x="660" y="170" rx="16" ry="16" width="460" height="220" fill="#1e293b" stroke="#475569" stroke-width="2"/>
+<text x="690" y="215" font-family="Arial, sans-serif" font-size="24" fill="#f8fafc" font-weight="700">dest-side key 오류</text>
+<text x="690" y="260" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">증상: dbt_internal_dest.id cannot be resolved</text>
+<text x="690" y="300" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">1) 기존 target relation 컬럼 목록 확인</text>
+<text x="690" y="333" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">2) 과거 append/table 스키마 잔존 여부 확인</text>
+<text x="690" y="366" font-family="Arial, sans-serif" font-size="19" fill="#cbd5e1">3) 필요 시 full refresh 또는 target 재생성</text>
+
+<rect x="120" y="470" rx="20" ry="20" width="960" height="170" fill="#111827" stroke="#334155" stroke-width="2"/>
+<text x="150" y="515" font-family="Arial, sans-serif" font-size="24" fill="#f8fafc" font-weight="700">공통 결론</text>
+<text x="150" y="560" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">merge incremental은 단순 materialization 선택이 아니라 record identity contract다.</text>
+<text x="150" y="595" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">source 결과와 target relation이 같은 business key를 공유해야만 안전하게 upsert된다.</text>
+</svg>

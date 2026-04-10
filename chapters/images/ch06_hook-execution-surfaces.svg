@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+<rect width="1200" height="720" fill="#0b1020"/>
+<text x="70" y="70" font-family="Arial, sans-serif" font-size="30" fill="#f8fafc" font-weight="700">Hook execution surfaces</text>
+<text x="70" y="110" font-family="Arial, sans-serif" font-size="18" fill="#94a3b8">시작 로그는 model-local, 종료 로그는 run-global로 나누는 것이 운영적으로 안전하다</text>
+
+<rect x="80" y="190" rx="18" ry="18" width="280" height="120" fill="#2563eb"/>
+<text x="110" y="240" font-family="Arial, sans-serif" font-size="24" fill="#fff" font-weight="700">pre_hook</text>
+<text x="110" y="275" font-family="Arial, sans-serif" font-size="18" fill="#dbeafe">model 시작 직전</text>
+
+<rect x="460" y="190" rx="18" ry="18" width="280" height="120" fill="#0f766e"/>
+<text x="490" y="240" font-family="Arial, sans-serif" font-size="24" fill="#fff" font-weight="700">model execution</text>
+<text x="490" y="275" font-family="Arial, sans-serif" font-size="18" fill="#ccfbf1">source / ref / merge / tests</text>
+
+<rect x="840" y="190" rx="18" ry="18" width="280" height="120" fill="#7c3aed"/>
+<text x="870" y="240" font-family="Arial, sans-serif" font-size="24" fill="#fff" font-weight="700">on-run-end</text>
+<text x="870" y="275" font-family="Arial, sans-serif" font-size="18" fill="#ede9fe">results 순회 / 상태 갱신</text>
+
+<path d="M360 250 L460 250" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M740 250 L840 250" stroke="#94a3b8" stroke-width="4" marker-end="url(#arrow)"/>
+
+<rect x="120" y="420" rx="20" ry="20" width="960" height="180" fill="#111827" stroke="#334155" stroke-width="2"/>
+<text x="150" y="465" font-family="Arial, sans-serif" font-size="24" fill="#f8fafc" font-weight="700">운영 메모</text>
+<text x="150" y="510" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">• post_hook은 개별 model 성공 후 처리에 가깝고, run 전체의 실패/성공 집계를 대신하지 않는다.</text>
+<text x="150" y="545" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">• on-run-end에서는 results, invocation_id, Airflow run_id를 함께 엮어 model별 상태를 정리할 수 있다.</text>
+<text x="150" y="580" font-family="Arial, sans-serif" font-size="20" fill="#e2e8f0">• run_query는 if execute로 감싸고, side effect가 있는 SQL은 compile/docs generate와 분리해서 본다.</text>
+
+<defs>
+<marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+<polygon points="0 0, 10 3, 0 6" fill="#94a3b8"/>
+</marker>
+</defs>
+</svg>

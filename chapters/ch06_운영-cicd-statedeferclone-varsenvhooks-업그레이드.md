@@ -574,3 +574,111 @@ dbt clone --select tag:heavy --state path/to/prod_artifacts
 > **개발은 빠르게, PR은 좁게, 배포는 안정적으로, 업그레이드는 단계적으로.**
 
 dbt 프로젝트가 커질수록 중요한 것은 “더 많은 명령을 아는가”보다, **어떤 환경에서 무엇을 기준으로 어디까지 실행할지 결정하는 감각**이다. state/defer/clone/retry, var/env_var/hook/run-operation, environments/jobs/release tracks는 모두 그 감각을 구현하는 서로 다른 도구다. 다음 장에서는 이 운영 기반 위에 governance, contracts, versions, metadata 같은 더 강한 팀 경계를 얹는다.
+
+
+## 6.11. Trino / Airflow 환경에서 hooks와 vars를 어떻게 운영 규칙으로 바꿀 것인가
+
+업무 메모의 가장 좋은 재료는 `log_model_start`, `log_run_end`, `airflow_run_id`, `from_dt`, `end_dt`, `run_query` 패턴이 한 묶음으로 들어 있다는 점이다.  
+이건 단순히 “매크로 한두 개를 쓴다”가 아니라, dbt 실행을 **배치 운영 단위**로 다루는 감각을 보여 준다.
+
+![Hook execution surfaces](./images/ch06_hook-execution-surfaces.svg)
+
+### 6.11.1. 왜 시작 로그는 model hook에, 종료 로그는 `on-run-end`에 두는가
+
+업무 메모는 시작 로그를 model-level `pre_hook`에 두고, 종료 로그는 `dbt_project.yml`의 `on-run-end`에서 갱신하는 구조를 사용한다.  
+이 분리가 중요한 이유는 다음과 같다.
+
+- `pre_hook`은 model이 실제로 실행되기 직전에 해당 model 기준으로 시작 상태를 남기기 좋다.
+- `post_hook`은 그 model이 성공했을 때만 기대하기 쉽다.
+- `on-run-end`는 실행 전체가 끝난 뒤 `results`를 순회하며 성공/실패 상태를 한 번에 정리하기 좋다.
+
+즉, “시작은 model-local, 종료는 run-global”이라는 감각이 운영적으로 매우 실용적이다.
+
+### 6.11.2. `results`와 `on-run-end`는 같은 맥락에서 봐야 한다
+
+업무 메모의 `log_run_end()`는 `results`를 순회하며 model별 상태를 업데이트한다.  
+이 패턴은 Chapter 06에서 꼭 강조할 가치가 있다. 왜냐하면 `results`는 아무 데서나 쓰는 변수가 아니라, **on-run-end context에서만 의미 있게 제공되는 실행 결과 묶음**이기 때문이다.
+
+따라서 교재에서는 아래를 분명히 적는 것이 좋다.
+
+- model 안에서 `results`를 쓰는 것이 아님
+- `on-run-end`에서 각 node 결과를 순회하는 것임
+- 성공/실패/메시지/alias/name 등을 여기서 읽을 수 있음
+
+## 6.12. `airflow_run_id`와 기간 파라미터는 “dbt 변수”가 아니라 배치 계약이다
+
+업무 메모는 `var('airflow_run_id', invocation_id)` 패턴을 쓰고 있다.  
+이건 매우 좋은 운영 관점이다. 이유는 다음과 같다.
+
+- Airflow가 run identifier를 넘겨 주면 dbt 로그와 orchestrator run을 연결할 수 있다.
+- Airflow가 없을 때는 `invocation_id`로 fallback할 수 있다.
+- `from_dt`, `end_dt`는 단순 필터 값이 아니라 **이번 배치가 무엇을 처리하는지**를 설명하는 계약이 된다.
+
+즉, vars는 “파라미터를 넣는 방법”이 아니라 **실행 문맥을 외부 시스템과 맞추는 방법**으로 가르치는 편이 좋다.
+
+예시 실행:
+
+```bash
+dbt run   --select case01_truncate_insert   --vars "{'airflow_run_id': 'manual__2026-04-08T00:00:00', 'from_dt': '2026-04-02', 'end_dt': '2026-04-08'}"
+```
+
+## 6.13. `run_query`는 고급하지만, side effect를 분리해야 한다
+
+업무 메모의 `case02`, `case03`, `case06`은 모두 `run_query`를 사용한다.  
+이 패턴은 매우 유용하지만, 동시에 위험하다. 왜냐하면 `run_query`는 compile 시 live connection이 있으면 warehouse에 실제 SQL을 날릴 수 있기 때문이다.
+
+따라서 Chapter 06에서는 아래 규칙을 같이 써야 한다.
+
+1. `run_query`는 가능하면 **조회성 분기**에 먼저 사용한다.
+2. `if execute`로 보호한다.
+3. DML이나 side effect가 있는 SQL은 hook/operation으로 분리하는 편이 낫다.
+4. compile / docs generate에도 live connection이 있을 수 있음을 잊지 않는다.
+
+## 6.14. case02 ~ case06을 “운영형 Jinja 패턴”으로 다시 분류하기
+
+업무 메모의 case들은 새 챕터를 만들기보다, Chapter 06 안에서 아래처럼 재분류해 가르치는 편이 좋다.
+
+### case02 · 제어 테이블/조회 결과 기반 분기
+- 언제 유용한가: 모드 전환, 환경별 분기, 작은 lookup 기반 분기
+- 주의점: `run_query` 결과가 없을 때 기본값 처리
+
+### case03 · 데이터 존재 여부 기반 분기
+- 언제 유용한가: data presence check, optional downstream, guard query
+- 주의점: 분기 양쪽이 모두 최종 컬럼 스키마를 맞춰야 함
+
+### case04 · 의도적 실패를 발생시켜 운영 계층으로 에러를 전달
+- 언제 유용한가: upstream precondition 미충족, 명시적 중단
+- 주의점: compile 단계와 execute 단계를 구분해야 함
+
+### case05 · 기간 파라미터 기반 batch shape 변경
+- 언제 유용한가: daily vs backfill, ad-hoc rerun, recovery run
+- 주의점: var 이름과 기본값, 로그 기록을 함께 설계해야 함
+
+### case06 · loop + dynamic SQL
+- 언제 유용한가: 작은 제어 집합(country, market, source list)을 읽어 union 또는 query generation
+- 주의점: 가능한 경우 raw 입력은 `source()`로 선언하고, 하드코딩 relation을 남발하지 않는다
+
+관련 최종 예시는 `../codes/04_chapter_snippets/ch06/trino/` 아래에 넣어 두었다.
+
+## 6.15. 운영형 logging macro는 하드코딩보다 일반화가 낫다
+
+업무 메모의 logging macro는 바로 쓸 수 있을 정도로 구체적이지만, 교재에서는 한 단계 일반화해 주는 것이 좋다.  
+예를 들면 다음 값을 var로 뺄 수 있다.
+
+- `log_database`
+- `log_schema`
+- `log_table`
+- `log_timezone`
+- `airflow_run_id`
+
+그러면 같은 아이디어를 Trino 외 환경으로도 옮길 수 있고, catalog/schema 하드코딩을 줄일 수 있다.
+
+## 6.16. 같이 보면 좋은 코드 경로
+
+- `../codes/04_chapter_snippets/ch06/trino/log_utils.sql`
+- `../codes/04_chapter_snippets/ch06/trino/dbt_project_hooks.example.yml`
+- `../codes/04_chapter_snippets/ch06/trino/case02_branch_query.sql`
+- `../codes/04_chapter_snippets/ch06/trino/case03_branch_query_fixed.sql`
+- `../codes/04_chapter_snippets/ch06/trino/case04_raise_except.sql`
+- `../codes/04_chapter_snippets/ch06/trino/case05_use_parameter.sql`
+- `../codes/04_chapter_snippets/ch06/trino/case06_loop.sql`

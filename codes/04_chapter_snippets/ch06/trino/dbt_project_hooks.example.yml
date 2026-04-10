@@ -1,0 +1,2 @@
+on-run-end:
+  - "{{ log_run_end() }}"

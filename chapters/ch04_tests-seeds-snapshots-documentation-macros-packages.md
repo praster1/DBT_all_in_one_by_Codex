@@ -688,3 +688,43 @@ Subscription & Billing은 이 장의 기능을 가장 깊게 요구한다.
 - Chapter 03이 “어떻게 설계할 것인가”라면,
 - Chapter 04는 “어떻게 믿을 것인가”이고,
 - Chapter 05는 “문제가 생겼을 때 어떻게 찾아낼 것인가”다.
+
+
+## 4.12. `generate_schema_name` override는 “편한 팁”이 아니라 프로젝트 전역 규칙 변경이다
+
+업무 메모의 `macros/generate_schema_name.sql`은 아주 실무적인 문제를 다룬다.  
+Trino / Iceberg 환경에서 target schema와 custom schema를 둘 다 `sample_db`로 쓰다 보면, 기본 naming 규칙 때문에 `sample_db_sample_db` 같은 relation 이름이 생길 수 있다. 이를 피하기 위해 프로젝트에 같은 이름의 macro를 정의해 기본 동작을 override하는 패턴이다.
+
+```sql
+{% macro generate_schema_name(custom_schema_name, node) -%}
+    {%- if custom_schema_name is none -%}
+        {{ target.schema }}
+    {%- else -%}
+        {{ custom_schema_name | trim }}
+    {%- endif -%}
+{%- endmacro %}
+```
+
+이 macro의 핵심은 “model 안에서 직접 호출한다”가 아니라, **dbt가 relation(database.schema.identifier)을 결정할 때 내부적으로 자동 사용하는 전역 naming rule을 바꾼다**는 데 있다.  
+즉, 이건 단순한 편의 매크로가 아니라 **프로젝트 전체 스키마 규칙을 바꾸는 override**다.
+
+### 4.12.1. 언제 유용한가
+
+- Trino / Iceberg에서 catalog와 schema를 명확히 고정해 쓰고 싶을 때
+- custom schema가 기본 schema와 중복되어 이상한 이름이 생길 때
+- connector 특성상 relation naming을 더 단순하게 유지하고 싶을 때
+
+### 4.12.2. 언제 조심해야 하는가
+
+- dev / prod 환경에서 사람별 schema 분리를 target.schema로 관리하고 있다면
+- 팀이 이미 `default_schema + '_' + custom_schema` 규칙을 가정하고 있다면
+- 다른 macro나 deployment automation이 기존 naming 규칙을 전제하고 있다면
+
+즉, 이 macro는 “좋은 아이디어”일 수 있지만, **프로젝트 naming convention 문서와 함께** 들어가야 한다.
+
+### 4.12.3. 교재에서 어떻게 가르치는 것이 좋은가
+
+이 macro는 Chapter 04의 macros 절에서 “프로젝트 전역 동작을 바꾸는 예”로 보여 주는 것이 가장 적절하다.  
+그리고 Trino Playbook 쪽에서는 “왜 이 override를 쓰는가”를 platform-specific 사례로 다시 연결하면 된다.
+
+관련 파일은 `../codes/02_reference_patterns/ch04/trino/generate_schema_name.sql`에 넣어 두었다.

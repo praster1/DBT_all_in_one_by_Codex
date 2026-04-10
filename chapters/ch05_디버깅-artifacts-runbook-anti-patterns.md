@@ -596,3 +596,95 @@ green build는 시작일 뿐이고, 실패 테스트는 깨진 가정을 말해 
 - `../codes/04_chapter_snippets/ch05/labs/03_fanout_bug/`
 - `../codes/04_chapter_snippets/ch05/labs/04_incremental_backfill/`
 - `../codes/04_chapter_snippets/ch05/labs/05_singular_test/`
+
+
+## 5.12. 실전 Failure Lab · Trino coordinator가 내려가 있을 때의 증상과 확인 순서
+
+업무 로그에 나온 첫 번째 오류는 매우 대표적이다.
+
+```text
+HTTPConnectionPool(host='localhost', port=8080): Failed to establish a new connection: [Errno 111] Connection refused
+```
+
+이 오류는 model SQL 문제나 source/ref 문제라기보다, **dbt가 Trino coordinator에 아예 닿지 못했다**는 뜻이다.  
+업무 메모에는 실제 원인으로 launcher 프로세스가 내려갔고, PID 파일 권한 때문에 일반 사용자로 다시 띄우지 못했던 상황이 정리돼 있었다.
+
+### 5.12.1. 진단 순서
+
+1. `dbt debug`로 profile과 adapter를 먼저 본다.
+2. `localhost:8080`의 coordinator가 실제로 떠 있는지 확인한다.
+3. launcher/PID 파일 권한 문제를 본다.
+4. 그 다음에야 model SQL로 내려간다.
+
+### 5.12.2. 이 오류를 “dbt 설정 문제”로만 보면 안 되는 이유
+
+Trino는 dbt가 직접 내장한 database가 아니라 외부 query engine이다.  
+따라서 아래 레이어를 분리해서 보는 것이 중요하다.
+
+- dbt profile/adapter 레이어
+- Trino service/launcher 레이어
+- connector/catalog/storage 레이어
+
+실무에선 이 셋이 동시에 보이기 때문에, 에러 메시지를 보고 어디서부터 볼지를 미리 정해 두어야 한다.
+
+### 5.12.3. 이 랩에서 꼭 열어봐야 하는 것
+
+- profile 샘플: `../codes/04_chapter_snippets/ch02/trino/profiles.trino.sample.yml`
+- 서비스 점검 스크립트: `../codes/04_chapter_snippets/ch02/trino/trino_service_first_run.sh`
+- dbt log: `logs/dbt.log`
+- coordinator 상태
+
+## 5.13. 실전 Failure Lab · `dbt_internal_source.id` / `dbt_internal_dest.id` 오류를 어떻게 읽을까
+
+업무 로그의 두 번째 핵심 오류는 merge incremental에서 많이 나오는 패턴이다.
+
+```text
+Column 'dbt_internal_source.id' cannot be resolved
+Column 'dbt_internal_dest.id' cannot be resolved
+```
+
+둘 다 `unique_key='id'`와 관련 있지만, 어디를 먼저 봐야 하는지는 다르다.
+
+![Trino merge error diagnosis](./images/ch05_trino-merge-error-diagnosis.svg)
+
+### 5.13.1. source-side 오류
+
+`dbt_internal_source.id`가 없다는 것은, **compiled SQL의 최종 SELECT가 `id`를 반환하지 못했다**는 뜻에 가깝다.  
+따라서 다음 순서가 좋다.
+
+1. `target/compiled/...`를 연다.
+2. 분기 조건마다 `id`가 실제로 선택되는지 본다.
+3. `if execute` / `else` 분기에서 컬럼 스키마가 달라지는지 본다.
+
+### 5.13.2. dest-side 오류
+
+`dbt_internal_dest.id`가 없다는 것은, **기존 target relation에 `id` 컬럼이 없는데 merge 조건을 만들려 했다**는 뜻에 가깝다.  
+따라서 target table 스키마를 확인해야 한다.
+
+1. target relation의 실제 컬럼 목록을 확인한다.
+2. 예전 append/table 방식으로 만든 테이블인지 확인한다.
+3. 필요하면 full refresh로 target을 다시 만든다.
+
+### 5.13.3. 이 에러가 주는 교훈
+
+merge incremental은 단순 materialization 선택이 아니다.  
+source와 target이 **같은 business key contract**를 공유해야만 한다.
+
+### 5.13.4. 실습용 broken/fixed 예시
+
+- broken: `../codes/04_chapter_snippets/ch05/trino/labs/02_merge_unique_key/broken_case03.sql`
+- fixed: `../codes/04_chapter_snippets/ch05/trino/labs/02_merge_unique_key/fixed_case03.sql`
+
+## 5.14. 디버깅 runbook에 Trino/Iceberg를 넣을 때 추가해야 하는 질문
+
+- 지금 실패는 dbt SQL 실패인가, coordinator 연결 실패인가
+- target relation이 이전 스키마를 끌고 오고 있지는 않은가
+- `run_query`가 compile/docs generate 중에도 실행될 수 있는가
+- hook이 실패를 숨기고 있지는 않은가
+- merge 대상 key가 source와 dest 양쪽에 존재하는가
+
+## 5.15. 같이 보면 좋은 코드 경로
+
+- `../codes/04_chapter_snippets/ch05/trino/labs/01_connection_refused/diagnosis_checklist.sh`
+- `../codes/04_chapter_snippets/ch05/trino/labs/02_merge_unique_key/broken_case03.sql`
+- `../codes/04_chapter_snippets/ch05/trino/labs/02_merge_unique_key/fixed_case03.sql`
