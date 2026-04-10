@@ -1,0 +1,11 @@
+version: 2
+
+sources:
+  - name: my_source
+    database: iceberg
+    schema: sample_db
+    tables:
+      - name: raw_data
+      - name: raw_sales
+      - name: raw_sales2
+      - name: country

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+<rect width="100%" height="100%" fill="#fbfbfd"/>
+<style>text{font-family:Arial, "Noto Sans KR", sans-serif;} .t{font-weight:700;font-size:28px;fill:#0f172a}.h{font-weight:700;font-size:20px;fill:#0f172a}.b{font-size:15px;fill:#334155}.cap{font-size:14px;fill:#475569}</style>
+<text x="40" y="46" class="t">Trino runtime topology</text>
+<rect x="40" y="90" rx="18" ry="18" width="250" height="170" fill="#eef6ff" stroke="#93c5fd" stroke-width="2"/>
+<text x="60" y="122" class="h">Read surface</text>
+<text x="60" y="148" class="b">Catalog A · raw sales</text>
+<text x="60" y="170" class="b">Catalog B · lookup</text>
+<text x="60" y="192" class="b">Catalog C · event stream</text>
+<rect x="340" y="90" rx="18" ry="18" width="260" height="170" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="360" y="122" class="h">Trino engine</text>
+<text x="360" y="148" class="b">Single SQL layer</text>
+<text x="360" y="170" class="b">Connector-aware reads</text>
+<text x="360" y="192" class="b">Query federation + pushdown</text>
+<rect x="650" y="90" rx="18" ry="18" width="250" height="170" fill="#eefdf6" stroke="#86efac" stroke-width="2"/>
+<text x="670" y="122" class="h">Write surface</text>
+<text x="670" y="148" class="b">Write-capable catalog</text>
+<text x="670" y="170" class="b">Intermediate + marts</text>
+<text x="670" y="192" class="b">Snapshots / logs</text>
+<rect x="950" y="90" rx="18" ry="18" width="210" height="170" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+<text x="970" y="122" class="h">Orchestration</text>
+<text x="970" y="148" class="b">Airflow run_id</text>
+<text x="970" y="170" class="b">from_dt / end_dt</text>
+<text x="970" y="192" class="b">Retry / backfill</text>
+<rect x="120" y="350" rx="18" ry="18" width="260" height="210" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="140" y="382" class="h">source contract</text>
+<text x="140" y="408" class="b">sources.yml first</text>
+<text x="140" y="430" class="b">lineage</text>
+<text x="140" y="452" class="b">tests + freshness</text>
+<text x="140" y="474" class="b">catalog / schema abstraction</text>
+<rect x="470" y="350" rx="18" ry="18" width="260" height="210" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="490" y="382" class="h">naming + execution</text>
+<text x="490" y="408" class="b">generate_schema_name</text>
+<text x="490" y="430" class="b">dbt debug / compile</text>
+<text x="490" y="452" class="b">run_query + if execute</text>
+<text x="490" y="474" class="b">merge unique_key contract</text>
+<rect x="820" y="350" rx="18" ry="18" width="280" height="210" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="840" y="382" class="h">observability</text>
+<text x="840" y="408" class="b">dbt_log bootstrap</text>
+<text x="840" y="430" class="b">pre_hook start log</text>
+<text x="840" y="452" class="b">on-run-end results</text>
+<text x="840" y="474" class="b">compiled SQL + run_results.json</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="290" y1="175" x2="340" y2="175" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="315.0" y="167.0" class="cap" text-anchor="middle">read</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="600" y1="175" x2="650" y2="175" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="625.0" y="167.0" class="cap" text-anchor="middle">materialize</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="900" y1="175" x2="950" y2="175" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="925.0" y="167.0" class="cap" text-anchor="middle">vars</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="250" y1="260" x2="250" y2="350" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="600" y1="260" x2="600" y2="350" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="1020" y1="260" x2="960" y2="350" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+</svg>

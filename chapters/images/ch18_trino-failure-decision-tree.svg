@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="680" viewBox="0 0 1200 680">
+<rect width="100%" height="100%" fill="#fbfbfd"/>
+<style>text{font-family:Arial, "Noto Sans KR", sans-serif;} .t{font-weight:700;font-size:28px;fill:#0f172a}.h{font-weight:700;font-size:20px;fill:#0f172a}.b{font-size:15px;fill:#334155}.cap{font-size:14px;fill:#475569}</style>
+<text x="40" y="46" class="t">Trino failure decision tree</text>
+<rect x="430" y="80" rx="18" ry="18" width="320" height="120" fill="#fff1f2" stroke="#fda4af" stroke-width="2"/>
+<text x="450" y="112" class="h">Failure appears</text>
+<text x="450" y="138" class="b">What failed first?</text>
+<text x="450" y="160" class="b">runtime or compiled SQL?</text>
+<rect x="90" y="270" rx="18" ry="18" width="300" height="170" fill="#eef6ff" stroke="#93c5fd" stroke-width="2"/>
+<text x="110" y="302" class="h">Connection refused</text>
+<text x="110" y="328" class="b">Check launcher/coordinator</text>
+<text x="110" y="350" class="b">Check PID permission</text>
+<text x="110" y="372" class="b">Check catalog load</text>
+<text x="110" y="394" class="b">SQL is not first suspect</text>
+<rect x="450" y="270" rx="18" ry="18" width="300" height="170" fill="#f8fafc" stroke="#94a3b8" stroke-width="2"/>
+<text x="470" y="302" class="h">dbt_internal_source.id</text>
+<text x="470" y="328" class="b">Compiled source branch missing key</text>
+<text x="470" y="350" class="b">Both branches must project id</text>
+<text x="470" y="372" class="b">Check merge + unique_key</text>
+<rect x="810" y="270" rx="18" ry="18" width="300" height="170" fill="#eefdf6" stroke="#86efac" stroke-width="2"/>
+<text x="830" y="302" class="h">dbt_internal_dest.id</text>
+<text x="830" y="328" class="b">Target table missing key</text>
+<text x="830" y="350" class="b">Schema drift or wrong alias</text>
+<text x="830" y="372" class="b">Check full-refresh need</text>
+<rect x="90" y="500" rx="18" ry="18" width="300" height="130" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="110" y="532" class="h">First actions</text>
+<text x="110" y="558" class="b">dbt debug</text>
+<text x="110" y="580" class="b">curl /v1/info</text>
+<text x="110" y="602" class="b">service script</text>
+<rect x="450" y="500" rx="18" ry="18" width="300" height="130" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="470" y="532" class="h">First actions</text>
+<text x="470" y="558" class="b">dbt compile</text>
+<text x="470" y="580" class="b">target/compiled</text>
+<text x="470" y="602" class="b">branch SQL contract</text>
+<rect x="810" y="500" rx="18" ry="18" width="300" height="130" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="830" y="532" class="h">First actions</text>
+<text x="830" y="558" class="b">describe target table</text>
+<text x="830" y="580" class="b">dbt run --full-refresh</text>
+<text x="830" y="602" class="b">check alias/schema</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="590" y1="200" x2="240" y2="270" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="415.0" y="227.0" class="cap" text-anchor="middle">runtime</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="590" y1="200" x2="600" y2="270" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="595.0" y="227.0" class="cap" text-anchor="middle">source side</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="590" y1="200" x2="960" y2="270" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="775.0" y="227.0" class="cap" text-anchor="middle">target side</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="240" y1="440" x2="240" y2="500" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="600" y1="440" x2="600" y2="500" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="960" y1="440" x2="960" y2="500" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+</svg>

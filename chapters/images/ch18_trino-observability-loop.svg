@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="580" viewBox="0 0 1200 580">
+<rect width="100%" height="100%" fill="#fbfbfd"/>
+<style>text{font-family:Arial, "Noto Sans KR", sans-serif;} .t{font-weight:700;font-size:28px;fill:#0f172a}.h{font-weight:700;font-size:20px;fill:#0f172a}.b{font-size:15px;fill:#334155}.cap{font-size:14px;fill:#475569}</style>
+<text x="40" y="46" class="t">Trino observability loop</text>
+<rect x="60" y="110" rx="18" ry="18" width="240" height="160" fill="#eef6ff" stroke="#93c5fd" stroke-width="2"/>
+<text x="80" y="142" class="h">pre_hook</text>
+<text x="80" y="168" class="b">log_model_start()</text>
+<text x="80" y="190" class="b">RUNNING row insert/merge</text>
+<text x="80" y="212" class="b">run_key + period vars</text>
+<rect x="350" y="110" rx="18" ry="18" width="230" height="160" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="370" y="142" class="h">model run</text>
+<text x="370" y="168" class="b">dbt run / build</text>
+<text x="370" y="190" class="b">case01~case06</text>
+<text x="370" y="212" class="b">success or failure</text>
+<rect x="630" y="110" rx="18" ry="18" width="240" height="160" fill="#eefdf6" stroke="#86efac" stroke-width="2"/>
+<text x="650" y="142" class="h">on-run-end</text>
+<text x="650" y="168" class="b">results context</text>
+<text x="650" y="190" class="b">status + message update</text>
+<text x="650" y="212" class="b">duration calculation</text>
+<rect x="920" y="110" rx="18" ry="18" width="220" height="160" fill="#fff7ed" stroke="#fdba74" stroke-width="2"/>
+<text x="940" y="142" class="h">audit table</text>
+<text x="940" y="168" class="b">dbt_log</text>
+<text x="940" y="190" class="b">one row per model/run</text>
+<text x="940" y="212" class="b">join with Airflow</text>
+<rect x="180" y="360" rx="18" ry="18" width="320" height="170" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="200" y="392" class="h">Run identity</text>
+<text x="200" y="418" class="b">airflow_run_id if exists</text>
+<text x="200" y="440" class="b">fallback = invocation_id</text>
+<text x="200" y="462" class="b">retry-safe merge key</text>
+<rect x="620" y="360" rx="18" ry="18" width="360" height="170" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="640" y="392" class="h">Artifacts and inspection</text>
+<text x="640" y="418" class="b">target/compiled</text>
+<text x="640" y="440" class="b">target/run</text>
+<text x="640" y="462" class="b">run_results.json</text>
+<text x="640" y="484" class="b">diagnosis checklist</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="300" y1="190" x2="350" y2="190" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="580" y1="190" x2="630" y2="190" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="870" y1="190" x2="920" y2="190" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="460" y1="270" x2="310" y2="360" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="385.0" y="307.0" class="cap" text-anchor="middle">context</text>
+<defs><marker id="m" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#64748b"/></marker></defs>
+<line x1="740" y1="270" x2="780" y2="360" stroke="#64748b" stroke-width="3" marker-end="url(#m)"/>
+<text x="760.0" y="307.0" class="cap" text-anchor="middle">inspect</text>
+</svg>

@@ -1,0 +1,15 @@
+trino_test:
+  target: dev
+  outputs:
+    dev:
+      type: trino
+      method: none
+      user: "{{ env_var('DBT_TRINO_USER', 'dbt') }}"
+      host: "{{ env_var('DBT_TRINO_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_TRINO_PORT', '8080') | int }}"
+      database: "{{ env_var('DBT_TRINO_CATALOG', 'iceberg') }}"
+      schema: "{{ env_var('DBT_TRINO_SCHEMA', 'sample_db') }}"
+      threads: 4
+      prepared_statements_enabled: true
+      retries: 3
+      timezone: Asia/Seoul

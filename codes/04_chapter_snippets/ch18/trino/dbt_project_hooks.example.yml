@@ -1,0 +1,6 @@
+name: trino_ops_examples
+version: 1.0.0
+config-version: 2
+
+on-run-end:
+  - "{{ log_run_end(results) }}"

@@ -1,5 +1,3 @@
-create schema if not exists iceberg.sample_db;
-
 create table if not exists iceberg.sample_db.dbt_log (
     invocation_id  varchar,
     model_name     varchar,
