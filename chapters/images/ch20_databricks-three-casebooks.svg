@@ -38,7 +38,7 @@
 <text x="475" y="485" class="body">• compute split between SQL and Python</text>
 
 <rect x="810" y="150" width="310" height="480" class="box3"/>
-<text x="840" y="190" class="label">Subscription & Billing</text>
+<text x="840" y="190" class="label">Subscription &amp; Billing</text>
 <text x="840" y="225" class="body">Stable API + current-state publishing</text>
 <text x="840" y="260" class="body">• stateful source models</text>
 <text x="840" y="290" class="body">• contract-driven fct_mrr</text>
