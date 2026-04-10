@@ -1,0 +1,36 @@
+version: 2
+
+models:
+  - name: fct_orders_public
+    description: "Public order-level mart for BI dashboards and semantic inputs."
+    config:
+      access: public
+      group: finance
+      contract:
+        enforced: true
+      grants:
+        select: ["reporter", "bi_reader"]
+      meta:
+        owner: finance_analytics
+        domain: retail
+        contains_pii: false
+        sla: "daily 08:00 KST"
+        serving_tier: public
+    columns:
+      - name: order_id
+        data_type: bigint
+        constraints:
+          - type: not_null
+        data_tests:
+          - not_null
+          - unique
+      - name: customer_id
+        data_type: bigint
+        data_tests:
+          - relationships:
+              to: ref('dim_customers_public')
+              field: customer_id
+      - name: gross_revenue
+        data_type: numeric
+      - name: order_status
+        data_type: varchar

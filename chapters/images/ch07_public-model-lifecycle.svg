@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="620" viewBox="0 0 1200 620">
+      <rect width="1200" height="620" fill="#fbfbfd"/>
+      <text x="60" y="70" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700" fill="#18212f">Public Model Lifecycle</text>
+      <text x="60" y="105" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#49566a">How an internal model becomes a stable, shared API.</text>
+
+      <g font-family="Arial, Helvetica, sans-serif">
+        <rect x="70" y="180" width="210" height="120" rx="18" fill="#eef2ff" stroke="#7f95d1" stroke-width="2"/>
+        <text x="175" y="228" text-anchor="middle" font-size="24" font-weight="700" fill="#18212f">Internal Model</text>
+        <text x="175" y="258" text-anchor="middle" font-size="17" fill="#32445a">staging / intermediate</text>
+        <text x="175" y="282" text-anchor="middle" font-size="17" fill="#32445a">fast iteration, low ceremony</text>
+
+        <rect x="355" y="180" width="220" height="120" rx="18" fill="#e8f8eb" stroke="#79a97f" stroke-width="2"/>
+        <text x="465" y="228" text-anchor="middle" font-size="24" font-weight="700" fill="#18212f">Public Candidate</text>
+        <text x="465" y="258" text-anchor="middle" font-size="17" fill="#32445a">tests + descriptions</text>
+        <text x="465" y="282" text-anchor="middle" font-size="17" fill="#32445a">owner / domain / SLA</text>
+
+        <rect x="650" y="180" width="220" height="120" rx="18" fill="#fff1da" stroke="#cfaf68" stroke-width="2"/>
+        <text x="760" y="228" text-anchor="middle" font-size="24" font-weight="700" fill="#18212f">Contracted API</text>
+        <text x="760" y="258" text-anchor="middle" font-size="17" fill="#32445a">contract + access + grants</text>
+        <text x="760" y="282" text-anchor="middle" font-size="17" fill="#32445a">selectors + CI rules</text>
+
+        <rect x="945" y="180" width="200" height="120" rx="18" fill="#fbe2eb" stroke="#c97e9f" stroke-width="2"/>
+        <text x="1045" y="228" text-anchor="middle" font-size="24" font-weight="700" fill="#18212f">Versioned API</text>
+        <text x="1045" y="258" text-anchor="middle" font-size="17" fill="#32445a">v1 / v2 coexist</text>
+        <text x="1045" y="282" text-anchor="middle" font-size="17" fill="#32445a">deprecation window</text>
+
+        <line x1="280" y1="240" x2="355" y2="240" stroke="#7a8190" stroke-width="4" marker-end="url(#arrow)"/>
+        <line x1="575" y1="240" x2="650" y2="240" stroke="#7a8190" stroke-width="4" marker-end="url(#arrow)"/>
+        <line x1="870" y1="240" x2="945" y2="240" stroke="#7a8190" stroke-width="4" marker-end="url(#arrow)"/>
+
+        <rect x="80" y="380" width="1060" height="150" rx="16" fill="#ffffff" stroke="#d0d5dd"/>
+        <text x="110" y="420" font-size="22" font-weight="700" fill="#18212f">Three-track examples</text>
+        <text x="110" y="456" font-size="18" fill="#32445a">Retail Orders → fct_orders_public / dim_customers_public</text>
+        <text x="110" y="486" font-size="18" fill="#32445a">Event Stream → keep session intermediate private, publish DAU / WAU rollups</text>
+        <text x="110" y="516" font-size="18" fill="#32445a">Subscription &amp; Billing → version fct_mrr when churn or MRR logic becomes breaking</text>
+      </g>
+
+      <defs>
+        <marker id="arrow" markerWidth="12" markerHeight="12" refX="9" refY="6" orient="auto">
+          <polygon points="0 0, 12 6, 0 12" fill="#7a8190"/>
+        </marker>
+      </defs>
+    </svg>

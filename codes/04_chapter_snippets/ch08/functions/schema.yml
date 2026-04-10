@@ -1,0 +1,3 @@
+functions:
+  - name: is_positive_int
+    description: "양의 정수 문자열 여부를 검사하는 SQL UDF"

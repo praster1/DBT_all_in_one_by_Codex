@@ -1,0 +1,10 @@
+query-comment:
+  comment: "{{ query_comment(node) }}"
+  job-label: true
+
+models:
+  my_project:
+    marts:
+      +persist_docs:
+        relation: true
+        columns: true

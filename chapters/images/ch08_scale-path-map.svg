@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860">
+  <defs>
+    <style>
+      .h { font: 38px 'Arial'; font-weight: 700; fill: #1b2230; }
+      .t { font: 28px 'Arial'; fill: #1f2d3d; }
+      .s { font: 21px 'Arial'; fill: #44566a; }
+      .box { rx: 22; ry: 22; stroke-width: 3; }
+    </style>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#4a5565"/>
+    </marker>
+  </defs>
+  <rect width="1400" height="860" fill="#fbfaf7"/>
+  <text x="70" y="70" class="h">그림 8-2. 단일 프로젝트에서 확장 가능한 분석 표면으로 가는 경로</text>
+  <text x="70" y="110" class="s">고급 기능은 한꺼번에 쓰는 것이 아니라, 프로젝트 성숙도에 따라 차례로 붙는 경우가 많다.</text>
+
+  <rect x="90" y="220" width="190" height="110" fill="#dae8f7" stroke="#5176a4" class="box"/>
+  <text x="122" y="275" class="t">단일 프로젝트</text>
+  <text x="148" y="307" class="s">models · tests · docs</text>
+
+  <rect x="340" y="200" width="210" height="150" fill="#dff0e4" stroke="#5d946d" class="box"/>
+  <text x="390" y="255" class="t">public marts</text>
+  <text x="365" y="288" class="s">contracts · versions · owners</text>
+  <text x="382" y="318" class="s">stable analytics API</text>
+
+  <rect x="610" y="180" width="220" height="190" fill="#fbe9c6" stroke="#d3a24b" class="box"/>
+  <text x="645" y="240" class="t">semantic / UDF</text>
+  <text x="656" y="273" class="s">metrics · saved queries</text>
+  <text x="658" y="303" class="s">shared warehouse logic</text>
+  <text x="645" y="333" class="s">Python where it clarifies</text>
+
+  <rect x="890" y="180" width="210" height="190" fill="#f5e1f1" stroke="#a06497" class="box"/>
+  <text x="955" y="240" class="t">mesh</text>
+  <text x="926" y="273" class="s">project dependencies</text>
+  <text x="933" y="303" class="s">cross-project ref</text>
+  <text x="933" y="333" class="s">public / private boundary</text>
+
+  <rect x="1160" y="200" width="180" height="150" fill="#fee6df" stroke="#cf7856" class="box"/>
+  <text x="1188" y="255" class="t">운영 최적화</text>
+  <text x="1185" y="288" class="s">microbatch · refresh</text>
+  <text x="1202" y="318" class="s">cost-aware jobs</text>
+
+  <rect x="520" y="520" width="300" height="160" fill="#eaf0f8" stroke="#5a7295" class="box"/>
+  <text x="602" y="580" class="t">dbt platform</text>
+  <text x="560" y="615" class="s">environments · jobs · docs/catalog</text>
+  <text x="560" y="645" class="s">studio / canvas / deploy surface</text>
+
+  <rect x="920" y="520" width="300" height="160" fill="#eef3d9" stroke="#8b944c" class="box"/>
+  <text x="1015" y="580" class="t">AI / MCP</text>
+  <text x="955" y="615" class="s">Copilot · governed context · agent access</text>
+  <text x="970" y="645" class="s">human rules first, acceleration second</text>
+
+  <line x1="280" y1="275" x2="340" y2="275" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+  <line x1="550" y1="275" x2="610" y2="275" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+  <line x1="830" y1="275" x2="890" y2="275" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+  <line x1="1100" y1="275" x2="1160" y2="275" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+  <line x1="720" y1="370" x2="720" y2="520" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+  <line x1="1100" y1="370" x2="1100" y2="520" stroke="#4a5565" stroke-width="4" marker-end="url(#arrow2)"/>
+
+  <text x="90" y="770" class="s">핵심 메시지: public mart와 governance가 먼저 안정되어야 semantic, mesh, AI가 제대로 작동한다.</text>
+</svg>

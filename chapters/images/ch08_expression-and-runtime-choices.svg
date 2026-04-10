@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+  <rect width="1200" height="760" fill="#fbfbfc"/>
+  <text x="70" y="70" font-size="34" font-family="Arial, sans-serif" fill="#111827" font-weight="700">CH08 · model, macro, UDF, Python model의 선택 기준</text>
+  <text x="70" y="108" font-size="18" font-family="Arial, sans-serif" fill="#4b5563">재사용 단위와 소비 범위를 먼저 보면 선택이 쉬워진다.</text>
+
+  <rect x="85" y="160" width="230" height="420" rx="18" fill="#dbeafe" stroke="#60a5fa" stroke-width="2"/>
+  <text x="115" y="205" font-size="28" font-family="Arial, sans-serif" fill="#1e3a8a" font-weight="700">SQL model</text>
+  <text x="115" y="248" font-size="18" font-family="Arial, sans-serif" fill="#1e3a8a">재사용 단위: relation</text>
+  <text x="115" y="280" font-size="18" font-family="Arial, sans-serif" fill="#1e3a8a">적합: 중간 결과, mart,</text>
+  <text x="115" y="306" font-size="18" font-family="Arial, sans-serif" fill="#1e3a8a">public API, contract</text>
+
+  <rect x="345" y="160" width="230" height="420" rx="18" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="375" y="205" font-size="28" font-family="Arial, sans-serif" fill="#5b21b6" font-weight="700">Macro</text>
+  <text x="375" y="248" font-size="18" font-family="Arial, sans-serif" fill="#5b21b6">재사용 단위: SQL 템플릿</text>
+  <text x="375" y="280" font-size="18" font-family="Arial, sans-serif" fill="#5b21b6">적합: 반복되는 SQL 패턴</text>
+  <text x="375" y="306" font-size="18" font-family="Arial, sans-serif" fill="#5b21b6">주의: compiled SQL 난독화</text>
+
+  <rect x="605" y="160" width="230" height="420" rx="18" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+  <text x="635" y="205" font-size="28" font-family="Arial, sans-serif" fill="#155e75" font-weight="700">SQL / Python UDF</text>
+  <text x="635" y="248" font-size="18" font-family="Arial, sans-serif" fill="#155e75">재사용 단위: warehouse function</text>
+  <text x="635" y="280" font-size="18" font-family="Arial, sans-serif" fill="#155e75">적합: dbt 밖 SQL/BI까지</text>
+  <text x="635" y="306" font-size="18" font-family="Arial, sans-serif" fill="#155e75">같은 계산을 공유할 때</text>
+
+  <rect x="865" y="160" width="250" height="420" rx="18" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="895" y="205" font-size="28" font-family="Arial, sans-serif" fill="#92400e" font-weight="700">Python model</text>
+  <text x="895" y="248" font-size="18" font-family="Arial, sans-serif" fill="#92400e">재사용 단위: relation</text>
+  <text x="895" y="280" font-size="18" font-family="Arial, sans-serif" fill="#92400e">적합: DataFrame, library,</text>
+  <text x="895" y="306" font-size="18" font-family="Arial, sans-serif" fill="#92400e">Python이 더 명확한 변환</text>
+
+  <line x1="330" y1="610" x2="1115" y2="610" stroke="#6b7280" stroke-width="3"/>
+  <text x="90" y="615" font-size="18" font-family="Arial, sans-serif" fill="#374151">로컬 구현에 가까움</text>
+  <text x="990" y="645" font-size="18" font-family="Arial, sans-serif" fill="#374151">공유 API에 가까움</text>
+  <polygon points="1115,610 1098,602 1098,618" fill="#6b7280"/>
+
+  <text x="90" y="700" font-size="20" font-family="Arial, sans-serif" fill="#111827" font-weight="700">판단 질문</text>
+  <text x="190" y="700" font-size="18" font-family="Arial, sans-serif" fill="#374151">1) relation이 필요한가? 2) dbt 밖에서도 재사용해야 하는가? 3) Python이 SQL보다 명확한가?</text>
+</svg>

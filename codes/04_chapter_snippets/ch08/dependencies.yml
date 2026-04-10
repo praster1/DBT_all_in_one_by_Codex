@@ -1,0 +1,7 @@
+packages:
+  - package: dbt-labs/dbt_utils
+    version: 1.3.0
+
+projects:
+  - name: finance_core
+    version: ">=1.2.0"

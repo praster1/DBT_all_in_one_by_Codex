@@ -1,0 +1,11 @@
+selectors:
+  - name: ci_public_contracts
+    description: "Build public marts and their buildable tests in CI."
+    definition:
+      union:
+        - method: group
+          value: finance
+          indirect_selection: buildable
+        - method: tag
+          value: public_api
+          indirect_selection: cautious

@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+  <rect width="1200" height="720" fill="#fcfcfd"/>
+  <text x="70" y="70" font-size="34" font-family="Arial, sans-serif" fill="#111827" font-weight="700">CH08 · 모델에서 소비 계층으로 올라가는 확장 구조</text>
+  <text x="70" y="110" font-size="18" font-family="Arial, sans-serif" fill="#4b5563">좋은 marts 위에 semantic, platform, AI 소비 표면이 얹힌다.</text>
+
+  <rect x="90" y="150" rx="18" ry="18" width="1020" height="88" fill="#dbeafe" stroke="#60a5fa" stroke-width="2"/>
+  <text x="120" y="195" font-size="28" font-family="Arial, sans-serif" fill="#1e3a8a" font-weight="700">1. Public marts / contract models</text>
+  <text x="120" y="225" font-size="18" font-family="Arial, sans-serif" fill="#1e40af">grain이 안정되고 tests · contracts · docs가 붙은 기반 relation</text>
+
+  <rect x="90" y="270" rx="18" ry="18" width="1020" height="100" fill="#ede9fe" stroke="#8b5cf6" stroke-width="2"/>
+  <text x="120" y="318" font-size="28" font-family="Arial, sans-serif" fill="#5b21b6" font-weight="700">2. Semantic layer</text>
+  <text x="120" y="348" font-size="18" font-family="Arial, sans-serif" fill="#6d28d9">semantic model · metric · saved query · export · cache</text>
+
+  <rect x="90" y="402" rx="18" ry="18" width="490" height="150" fill="#ecfeff" stroke="#06b6d4" stroke-width="2"/>
+  <text x="120" y="445" font-size="26" font-family="Arial, sans-serif" fill="#155e75" font-weight="700">3A. 표현 확장</text>
+  <text x="120" y="480" font-size="18" font-family="Arial, sans-serif" fill="#0f766e">SQL model · Macro · SQL UDF · Python UDF · Python model</text>
+  <text x="120" y="510" font-size="17" font-family="Arial, sans-serif" fill="#0f766e">“어떻게 계산을 표현할 것인가”</text>
+
+  <rect x="620" y="402" rx="18" ry="18" width="490" height="150" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+  <text x="650" y="445" font-size="26" font-family="Arial, sans-serif" fill="#92400e" font-weight="700">3B. 경계와 운영</text>
+  <text x="650" y="480" font-size="18" font-family="Arial, sans-serif" fill="#92400e">Mesh · dependencies.yml · cross-project ref · performance · cost</text>
+  <text x="650" y="510" font-size="17" font-family="Arial, sans-serif" fill="#92400e">“어디까지 공개하고 어떻게 운영할 것인가”</text>
+
+  <rect x="90" y="584" rx="18" ry="18" width="1020" height="92" fill="#dcfce7" stroke="#22c55e" stroke-width="2"/>
+  <text x="120" y="628" font-size="28" font-family="Arial, sans-serif" fill="#166534" font-weight="700">4. 소비 표면</text>
+  <text x="120" y="658" font-size="18" font-family="Arial, sans-serif" fill="#166534">Catalog · jobs · environments · Canvas · Copilot · MCP · BI · AI assistants</text>
+
+  <path d="M600 238 L600 270" stroke="#6b7280" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M340 370 L340 402" stroke="#6b7280" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M860 370 L860 402" stroke="#6b7280" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M340 552 L340 584" stroke="#6b7280" stroke-width="3" marker-end="url(#arrow)"/>
+  <path d="M860 552 L860 584" stroke="#6b7280" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L6,3 z" fill="#6b7280"/>
+    </marker>
+  </defs>
+</svg>

@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: fct_daily_active_users
+    data_tests:
+      - dbt_utils.expression_is_true:
+          expression: "active_users >= 0"
+          config:
+            severity: warn
+            where: "activity_date >= current_date - interval '3 day'"
+            store_failures: true
+
+  - name: fct_orders_public
+    columns:
+      - name: order_id
+        data_tests:
+          - unique:
+              config:
+                error_if: ">0"
+                warn_if: ">0"
+                store_failures: true

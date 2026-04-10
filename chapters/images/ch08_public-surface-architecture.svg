@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="820" viewBox="0 0 1400 820">
+  <defs>
+    <style>
+      .t { font: 28px 'Arial'; fill: #10243e; }
+      .h { font: 38px 'Arial'; font-weight: 700; fill: #0b1f33; }
+      .s { font: 22px 'Arial'; fill: #30465f; }
+      .box { rx: 24; ry: 24; stroke-width: 3; }
+      .small { font: 20px 'Arial'; fill: #24384f; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5c6b7a"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="1400" height="820" fill="#f7f5ef"/>
+  <text x="70" y="70" class="h">그림 8-1. 모델 위의 공용 분석 표면</text>
+  <text x="70" y="110" class="s">좋은 dbt 프로젝트는 mart에서 끝나지 않는다. 정의층, 표현층, 경계 관리, 실행면, 소비 표면이 그 위에 차례로 얹힌다.</text>
+
+  <rect x="80" y="180" width="260" height="120" fill="#dce8f4" stroke="#4b78a8" class="box"/>
+  <text x="120" y="235" class="t">sources → staging</text>
+  <text x="138" y="268" class="small">raw 입력과 정리 계층</text>
+
+  <rect x="390" y="180" width="260" height="120" fill="#d9f0e2" stroke="#4e8c64" class="box"/>
+  <text x="420" y="235" class="t">intermediate → marts</text>
+  <text x="430" y="268" class="small">public relation과 핵심 mart</text>
+
+  <rect x="700" y="150" width="280" height="180" fill="#fceac8" stroke="#d0a449" class="box"/>
+  <text x="767" y="212" class="t">Semantic Layer</text>
+  <text x="748" y="247" class="small">semantic models · metrics</text>
+  <text x="760" y="277" class="small">saved queries · exports</text>
+
+  <rect x="1030" y="155" width="280" height="170" fill="#f3dff0" stroke="#9c5f96" class="box"/>
+  <text x="1094" y="216" class="t">표현층</text>
+  <text x="1066" y="250" class="small">SQL model · macro · UDF</text>
+  <text x="1078" y="280" class="small">Python model / Python UDF</text>
+
+  <rect x="390" y="420" width="270" height="140" fill="#ebf1f8" stroke="#58779b" class="box"/>
+  <text x="478" y="478" class="t">Mesh</text>
+  <text x="432" y="513" class="small">public / protected / private</text>
+  <text x="425" y="542" class="small">groups · versions · dependencies</text>
+
+  <rect x="730" y="420" width="280" height="140" fill="#fde6dd" stroke="#c4724e" class="box"/>
+  <text x="780" y="478" class="t">Performance</text>
+  <text x="748" y="513" class="small">view → table → incremental</text>
+  <text x="760" y="542" class="small">microbatch · cost · refresh</text>
+
+  <rect x="1060" y="410" width="250" height="160" fill="#e4edf7" stroke="#506b8e" class="box"/>
+  <text x="1100" y="475" class="t">dbt platform</text>
+  <text x="1102" y="510" class="small">environments · jobs</text>
+  <text x="1108" y="540" class="small">docs / catalog / canvas</text>
+
+  <rect x="700" y="640" width="280" height="120" fill="#eef0d5" stroke="#8a8f4a" class="box"/>
+  <text x="802" y="695" class="t">AI / MCP</text>
+  <text x="765" y="730" class="small">Copilot · context · governed access</text>
+
+  <line x1="340" y1="240" x2="390" y2="240" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="650" y1="240" x2="700" y2="240" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="980" y1="240" x2="1030" y2="240" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="520" y1="300" x2="520" y2="420" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="840" y1="330" x2="840" y2="420" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="1185" y1="325" x2="1185" y2="410" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+  <line x1="870" y1="560" x2="870" y2="640" stroke="#5c6b7a" stroke-width="4" marker-end="url(#arrow)"/>
+</svg>

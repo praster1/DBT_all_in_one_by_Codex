@@ -1,0 +1,12 @@
+saved_queries:
+  - name: monthly_revenue_by_segment
+    query_params:
+      metrics: [revenue]
+      group_by:
+        - TimeDimension('order_date', 'month')
+        - Dimension('customer_segment')
+    exports:
+      - name: monthly_revenue_by_segment_export
+        config:
+          export_as: table
+          schema: semantic_exports

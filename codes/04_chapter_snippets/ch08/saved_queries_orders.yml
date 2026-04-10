@@ -1,0 +1,16 @@
+metrics:
+  - name: revenue
+    label: Revenue
+    type: simple
+    type_params:
+      measure:
+        name: gross_revenue
+
+saved_queries:
+  - name: monthly_revenue_by_segment
+    query_params:
+      metrics: [revenue]
+      group_by:
+        - TimeDimension('order_date', 'month')
+        - Dimension('customer_segment')
+      where: "order_date >= dateadd(day, -90, current_date)"

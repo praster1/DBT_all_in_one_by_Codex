@@ -1,0 +1,33 @@
+semantic_models:
+  - name: orders_semantic
+    model: ref('fct_orders')
+    defaults:
+      agg_time_dimension: order_date
+    entities:
+      - name: order
+        type: primary
+        expr: order_id
+      - name: customer
+        type: foreign
+        expr: customer_id
+    dimensions:
+      - name: order_date
+        type: time
+        type_params:
+          time_granularity: day
+      - name: order_status
+        type: categorical
+      - name: customer_segment
+        type: categorical
+    measures:
+      - name: gross_revenue
+        agg: sum
+        expr: gross_revenue
+
+metrics:
+  - name: revenue
+    label: Revenue
+    type: simple
+    type_params:
+      measure:
+        name: gross_revenue

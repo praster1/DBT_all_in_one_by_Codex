@@ -1,0 +1,8 @@
+models:
+  my_project:
+    marts:
+      +grants:
+        select: ["reporter", "bi_reader"]
+
+on-run-end:
+  - "{% for schema in schemas %}grant usage on schema {{ schema }} to role reporter;{% endfor %}"

@@ -1,0 +1,21 @@
+version: 2
+
+models:
+  - name: fct_mrr
+    description: "Monthly recurring revenue API for downstream finance and board reporting."
+    latest_version: 2
+    versions:
+      - v: 1
+        deprecation_date: 2026-12-31
+      - v: 2
+    config:
+      access: public
+      group: revenue
+      contract:
+        enforced: true
+      meta:
+        owner: revenue_ops
+        domain: subscription
+        contains_pii: false
+        sla: "daily 09:00 KST"
+        financial_reporting_tier: board
