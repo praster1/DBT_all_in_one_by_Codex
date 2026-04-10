@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+<rect width="1200" height="720" fill="#f8fafc"/>
+<rect x="40" y="40" width="1120" height="80" rx="18" fill="#0f172a"/>
+<text x="80" y="90" font-family="Arial, sans-serif" font-size="34" fill="#ffffff" font-weight="700">ClickHouse에서는 모델링과 물리 설계가 함께 움직인다</text>
+<rect x="70" y="180" width="250" height="140" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="95" y="220" font-family="Arial, sans-serif" font-size="28" fill="#0f172a" font-weight="700">논리 모델</text>
+<text x="95" y="260" font-family="Arial, sans-serif" font-size="22" fill="#334155">source / ref</text>
+<text x="95" y="290" font-family="Arial, sans-serif" font-size="22" fill="#334155">staging / intermediate / marts</text>
+
+<rect x="470" y="160" width="260" height="180" rx="20" fill="#ecfeff" stroke="#06b6d4" stroke-width="3"/>
+<text x="505" y="210" font-family="Arial, sans-serif" font-size="30" fill="#0f172a" font-weight="700">물리 설계</text>
+<text x="505" y="255" font-family="Arial, sans-serif" font-size="22" fill="#155e75">engine</text>
+<text x="505" y="285" font-family="Arial, sans-serif" font-size="22" fill="#155e75">order_by</text>
+<text x="505" y="315" font-family="Arial, sans-serif" font-size="22" fill="#155e75">partition_by / ttl</text>
+
+<rect x="860" y="180" width="270" height="140" rx="20" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="895" y="220" font-family="Arial, sans-serif" font-size="28" fill="#0f172a" font-weight="700">운영 표면</text>
+<text x="895" y="260" font-family="Arial, sans-serif" font-size="22" fill="#334155">table / incremental / MV</text>
+<text x="895" y="290" font-family="Arial, sans-serif" font-size="22" fill="#334155">cluster / distributed / runbook</text>
+
+<line x1="320" y1="250" x2="470" y2="250" stroke="#64748b" stroke-width="5"/>
+<polygon points="470,250 448,238 448,262" fill="#64748b"/>
+<line x1="730" y1="250" x2="860" y2="250" stroke="#64748b" stroke-width="5"/>
+<polygon points="860,250 838,238 838,262" fill="#64748b"/>
+
+<rect x="100" y="420" width="300" height="180" rx="22" fill="#fff7ed" stroke="#fb923c" stroke-width="3"/>
+<text x="130" y="470" font-family="Arial, sans-serif" font-size="28" fill="#7c2d12" font-weight="700">Retail Orders</text>
+<text x="130" y="510" font-family="Arial, sans-serif" font-size="22" fill="#7c2d12">line-level fact + rollup</text>
+<text x="130" y="545" font-family="Arial, sans-serif" font-size="22" fill="#7c2d12">order_date 중심 정렬</text>
+
+<rect x="450" y="420" width="300" height="180" rx="22" fill="#ecfccb" stroke="#65a30d" stroke-width="3"/>
+<text x="480" y="470" font-family="Arial, sans-serif" font-size="28" fill="#365314" font-weight="700">Event Stream</text>
+<text x="480" y="510" font-family="Arial, sans-serif" font-size="22" fill="#365314">append-only + microbatch</text>
+<text x="480" y="545" font-family="Arial, sans-serif" font-size="22" fill="#365314">MV / TTL / sessionization</text>
+
+<rect x="800" y="420" width="300" height="180" rx="22" fill="#f5f3ff" stroke="#8b5cf6" stroke-width="3"/>
+<text x="830" y="470" font-family="Arial, sans-serif" font-size="28" fill="#4c1d95" font-weight="700">Subscription</text>
+<text x="830" y="510" font-family="Arial, sans-serif" font-size="22" fill="#4c1d95">daily fact + 상태 이력</text>
+<text x="830" y="545" font-family="Arial, sans-serif" font-size="22" fill="#4c1d95">current-state보다 시계열 관찰</text>
+</svg>

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<rect width="1200" height="760" fill="#ffffff"/>
+<text x="60" y="70" font-family="Arial, sans-serif" font-size="34" fill="#0f172a" font-weight="700">세 casebook를 ClickHouse에서 진행할 때 보는 축</text>
+<line x1="80" y1="120" x2="1120" y2="120" stroke="#cbd5e1" stroke-width="3"/>
+<text x="80" y="170" font-family="Arial, sans-serif" font-size="24" fill="#475569" font-weight="700">설계 축</text>
+<text x="340" y="170" font-family="Arial, sans-serif" font-size="24" fill="#c2410c" font-weight="700">Retail Orders</text>
+<text x="620" y="170" font-family="Arial, sans-serif" font-size="24" fill="#4d7c0f" font-weight="700">Event Stream</text>
+<text x="900" y="170" font-family="Arial, sans-serif" font-size="24" fill="#6d28d9" font-weight="700">Subscription</text>
+
+<g font-family="Arial, sans-serif" font-size="22" fill="#0f172a">
+<text x="80" y="240">주요 grain</text>
+<text x="80" y="330">대표 materialization</text>
+<text x="80" y="420">물리 설계 핵심</text>
+<text x="80" y="510">특히 중요한 위험</text>
+<text x="80" y="600">운영 포인트</text>
+</g>
+
+<g font-family="Arial, sans-serif" font-size="21" fill="#7c2d12">
+<text x="340" y="240">order line / order day</text>
+<text x="340" y="330">table, incremental</text>
+<text x="340" y="420">order_by(order_date, order_id)</text>
+<text x="340" y="450">partition_by(toYYYYMM(order_date))</text>
+<text x="340" y="510">fanout, 잘못된 정렬키</text>
+<text x="340" y="600">rebuild 범위와 rollup 분리</text>
+</g>
+
+<g font-family="Arial, sans-serif" font-size="21" fill="#365314">
+<text x="620" y="240">event / session / day</text>
+<text x="620" y="330">microbatch, materialized_view</text>
+<text x="620" y="420">event_time 중심 정렬</text>
+<text x="620" y="450">TTL / catchup / late data</text>
+<text x="620" y="510">blind window, duplicate risk</text>
+<text x="620" y="600">MV와 target table lifecycle</text>
+</g>
+
+<g font-family="Arial, sans-serif" font-size="21" fill="#4c1d95">
+<text x="900" y="240">subscription / snapshot day</text>
+<text x="900" y="330">table, snapshot-ready fact</text>
+<text x="900" y="420">snapshot_date 정렬</text>
+<text x="900" y="450">daily MRR surface</text>
+<text x="900" y="510">과한 mutation, 복잡한 current-state</text>
+<text x="900" y="600">관찰용 surface로 제한</text>
+</g>
+
+<line x1="300" y1="120" x2="300" y2="660" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="580" y1="120" x2="580" y2="660" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="860" y1="120" x2="860" y2="660" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="80" y1="200" x2="1120" y2="200" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="80" y1="290" x2="1120" y2="290" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="80" y1="380" x2="1120" y2="380" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="80" y1="470" x2="1120" y2="470" stroke="#e2e8f0" stroke-width="2"/>
+<line x1="80" y1="560" x2="1120" y2="560" stroke="#e2e8f0" stroke-width="2"/>
+</svg>

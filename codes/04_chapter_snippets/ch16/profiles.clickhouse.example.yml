@@ -1,0 +1,20 @@
+my_clickhouse:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      driver: http
+      host: localhost
+      port: 8123
+      user: default
+      password: ""
+      schema: analytics
+      threads: 1
+      secure: false
+      verify: true
+      # ClickHouse Cloud / cluster 환경이라면 필요한 settings를
+      # pre-hook의 SET 문보다 profile custom_settings에서 관리하는 편이 안전하다.
+      custom_settings:
+        max_execution_time: 60
+        # Cloud / sticky session 환경에서만 신중하게 검토
+        # select_sequential_consistency: 1
