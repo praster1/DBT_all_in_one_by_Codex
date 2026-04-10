@@ -47,3 +47,7 @@ DuckDB, MySQL, PostgreSQL, BigQuery, ClickHouse, Snowflake, Trino, NoSQL + SQL L
 - 책을 먼저 읽고 싶다면: `chapters/00-introduction-and-reading-guide.md`
 - 코드부터 실행하고 싶다면: `codes/01_duckdb_runnable_project/README.md`
 - 전체 구조를 먼저 보고 싶다면: `01_outline/master_toc.md`
+
+## 주의사항
+
+- 이 문서는 ChatGPT를 적극적으로 활용하여 작성되었습니다. 나름의 검수를 하였으나, 잘못된 정보나 오류가 있을 수 있습니다.
