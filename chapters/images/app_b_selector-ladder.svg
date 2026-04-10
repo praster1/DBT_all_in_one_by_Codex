@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+<rect width="1280" height="760" fill="#0b1020"/>
+<text x="70" y="80" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif" font-weight="700">Selector Ladder</text>
+<text x="70" y="115" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">범위를 좁히고 넓히는 기본 선택 문법</text>
+
+<rect x="100" y="160" width="1080" height="480" rx="20" fill="#101827" stroke="#334155" stroke-width="2"/>
+
+<text x="150" y="230" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s model_name</text>
+<text x="460" y="230" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">가장 좁은 범위: 그 모델만</text>
+
+<text x="150" y="295" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s model_name+</text>
+<text x="460" y="295" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">현재 + downstream: 소비처 확인</text>
+
+<text x="150" y="360" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s +model_name</text>
+<text x="460" y="360" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">현재 + upstream: 원인 추적</text>
+
+<text x="150" y="425" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s +model_name+</text>
+<text x="460" y="425" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">양방향: 전체 영향 확인</text>
+
+<text x="150" y="490" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s tag:daily / path:models/retail</text>
+<text x="460" y="490" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">태그 / 경로 기준 선택</text>
+
+<text x="150" y="555" fill="#e2e8f0" font-size="22" font-family="Arial, sans-serif">-s state:modified+ --defer --state ...</text>
+<text x="460" y="555" fill="#94a3b8" font-size="20" font-family="Arial, sans-serif">slim CI 핵심: 변경분 + 영향 범위 + defer</text>
+
+<circle cx="1090" cy="225" r="18" fill="#38bdf8"/>
+<circle cx="1090" cy="290" r="18" fill="#22c55e"/>
+<circle cx="1090" cy="355" r="18" fill="#f59e0b"/>
+<circle cx="1090" cy="420" r="18" fill="#ef4444"/>
+<circle cx="1090" cy="485" r="18" fill="#a78bfa"/>
+<circle cx="1090" cy="550" r="18" fill="#f97316"/>
+<text x="1125" y="232" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">좁음</text>
+<text x="1125" y="557" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">넓음 / 운영형</text>
+</svg>

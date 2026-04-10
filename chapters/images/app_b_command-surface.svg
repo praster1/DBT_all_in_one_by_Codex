@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+<rect width="1280" height="760" fill="#0b1020"/>
+<text x="70" y="80" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif" font-weight="700">DBT Command Surface</text>
+<text x="70" y="115" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">명령을 기능이 아니라 관찰 → 실행 → 운영 흐름으로 기억하기</text>
+
+<rect x="70" y="160" rx="18" ry="18" width="340" height="460" fill="#101827" stroke="#38bdf8" stroke-width="2"/>
+<text x="100" y="210" fill="#e0f2fe" font-size="28" font-family="Arial, sans-serif" font-weight="700">관찰 · 확인</text>
+<text x="100" y="255" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt debug</text>
+<text x="100" y="295" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt parse</text>
+<text x="100" y="335" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt ls</text>
+<text x="100" y="375" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt compile</text>
+<text x="100" y="415" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt show</text>
+<text x="100" y="455" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt docs generate</text>
+<text x="100" y="525" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">코드와 그래프를 읽고 범위를 좁힐 때</text>
+
+<rect x="470" y="160" rx="18" ry="18" width="340" height="460" fill="#101827" stroke="#22c55e" stroke-width="2"/>
+<text x="500" y="210" fill="#dcfce7" font-size="28" font-family="Arial, sans-serif" font-weight="700">실행 · 검증</text>
+<text x="500" y="255" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt seed</text>
+<text x="500" y="295" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt run</text>
+<text x="500" y="335" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt test</text>
+<text x="500" y="375" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt build</text>
+<text x="500" y="415" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt snapshot</text>
+<text x="500" y="455" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt source freshness</text>
+<text x="500" y="525" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">relation을 만들고 품질을 확인할 때</text>
+
+<rect x="870" y="160" rx="18" ry="18" width="340" height="460" fill="#101827" stroke="#f59e0b" stroke-width="2"/>
+<text x="900" y="210" fill="#fef3c7" font-size="28" font-family="Arial, sans-serif" font-weight="700">운영 · 복구</text>
+<text x="900" y="255" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt deps</text>
+<text x="900" y="295" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt clone</text>
+<text x="900" y="335" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt retry</text>
+<text x="900" y="375" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt run-operation</text>
+<text x="900" y="415" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt docs serve</text>
+<text x="900" y="455" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif">dbt clean</text>
+<text x="900" y="525" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">CI, 재시도, bootstrap, 운영 작업</text>
+
+<path d="M410 390 L470 390" stroke="#cbd5e1" stroke-width="4" marker-end="url(#arrow)"/>
+<path d="M810 390 L870 390" stroke="#cbd5e1" stroke-width="4" marker-end="url(#arrow)"/>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L0,6 L8,3 z" fill="#cbd5e1"/>
+  </marker>
+</defs>
+</svg>
