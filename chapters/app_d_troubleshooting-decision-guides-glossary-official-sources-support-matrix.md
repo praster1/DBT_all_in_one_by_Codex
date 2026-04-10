@@ -1,603 +1,633 @@
 # APPENDIX D · Troubleshooting, Decision Guides, Glossary, Official Sources, Support Matrix
 
-> 실패를 좁히는 체크리스트부터 공식 자료, 용어집, 의사결정 표, 지원 매트릭스까지 책의 백맵 역할을 하는 부록.
+실무에서 자주 꺼내 보는 정보는 두 가지다.  
+첫째는 **지금 어디가 고장 났는지 빠르게 좁히는 정보**다.  
+둘째는 **지금 하려는 선택이 구조적으로 맞는지 판별하는 기준**이다.
 
-> **핵심 개념 → 사례 → 운영 기준** 설명을 먼저 충분히 풀고, 이후 장에서 예제 케이스북과 플랫폼 플레이북으로 다시 가져간다.
+이 부록은 그 두 가지를 한 곳에 모은다.  
+앞선 본문이 개념과 사례를 설명했다면, 이 부록은 그 개념과 사례를 다시 꺼내 쓸 때 필요한 **백맵(back map)** 역할을 한다.
 
-실무에서 자주 꺼내 보는 정보는 대체로 두 종류다. 막혔을 때 어디부터 볼지 알려 주는 정보와, 지금 하려는 선택이 맞는지 판별하는 기준이다. 마지막 부록은 그 두 종류를 하나로 모아 책 전체를 다시 참조할 수 있게 구성했다.
+핵심 원칙은 단순하다.
 
-## D.1. 문제 해결 체크리스트
+1. 전체 실행을 반복하기 전에 **문제 범위를 줄인다**.
+2. SQL만 다시 쓰기 전에 **compiled SQL, artifacts, selector 결과**를 먼저 본다.
+3. 지금 고민이 “오류 해결”인지 “설계 선택”인지 먼저 구분한다.
+4. platform/plan/engine 차이가 개입되는 기능은 **가용성부터 확인**한다.
 
-1. 가상환경이 활성화되어 있는가
+---
 
-2. dbt --version에서 adapter가 함께 보이는가
+## D.1. 이 부록을 어떻게 쓰면 좋은가
 
-3. dbt debug가 통과하는가
+이 부록은 처음부터 끝까지 읽는 장이 아니다.  
+문제가 생겼을 때는 **D.2 Troubleshooting**, 설계 판단이 필요할 때는 **D.3 Decision Guides**, 용어가 헷갈릴 때는 **D.4 Glossary**, 최신성 확인이 필요할 때는 **D.5 Official Sources**, 기능 가용성이 궁금할 때는 **D.6 Support Matrix**로 바로 가면 된다.
 
-4. profile 이름과 profiles.yml 최상위 키가 같은가
+세 casebook를 다시 연결할 때는 아래를 기준으로 생각하면 된다.
 
-5. 실패 범위를 -s model_name까지 좁혔는가
+- **Retail Orders**: grain / fanout / status 기반 KPI 규칙
+- **Event Stream**: freshness / incremental / late-arriving / microbatch
+- **Subscription & Billing**: 상태 이력 / snapshot / 공용 API surface / versioning
 
-6. dbt ls -s...로 선택 결과를 확인했는가
+아래 그림은 이 부록의 성격을 요약한다.
 
-7. dbt parse로 구조 오류를 먼저 확인했는가
+![Appendix D Diagnostic Ladder](./images/app_d_diagnostic-ladder.svg)
 
-8. dbt compile -s...로 compiled SQL을 보았는가
+---
 
-9. target/run과 target/compiled를 구분해서 보고 있는가
+## D.2. Troubleshooting · 실패를 좁히는 진단 사다리
 
-10. logs/dbt.log를 열어 보았는가
+### D.2.1. 가장 먼저 구분할 것: 연결 문제인가, 구조 문제인가, 데이터 문제인가
 
-11. 직접 relation 이름 하드코딩으로 lineage를 깨뜨리지 않았는가
+dbt에서 실패는 얼핏 비슷해 보여도 성격이 다르다.  
+성격을 구분하지 못하면 가장 느린 방법인 “전체 재실행”을 반복하게 된다.
 
-12. 테스트 실패를 데이터 품질 문제와 로직 문제로 분리해서 보고 있는가
+문제를 크게 다섯 층으로 나누면 빠르게 좁힐 수 있다.
 
-**중요한 원칙**
+1. **로컬/연결 층**
+   - 가상환경
+   - adapter 설치
+   - profile
+   - database connection
+   - 네트워크, 권한, 서비스 기동 상태
 
-전체 실행을 반복하기 전에, 문제 범위를 줄이고 compiled SQL과 관련 artifacts를 보는 것이 가장 큰 시간 절약이다.
+2. **프로젝트 구조 층**
+   - `dbt_project.yml`
+   - `profiles.yml`
+   - YAML 파싱
+   - `source()` / `ref()` 이름 불일치
+   - selector 오해
 
-## D.2. 용어집
+3. **컴파일 층**
+   - Jinja 분기
+   - macro override
+   - compiled SQL
+   - `is_incremental()`
+   - `run_query()` side effect
 
-| 용어 | 짧은 설명 |
+4. **데이터 계약 층**
+   - `unique_key`
+   - `grain`
+   - source freshness
+   - relationships
+   - contract / constraints
+   - snapshot strategy
+
+5. **운영/가용성 층**
+   - Core vs Fusion
+   - dbt platform plan 제한
+   - Semantic Layer availability
+   - project dependency / Mesh availability
+   - docs / Catalog / Studio 차이
+
+문제를 볼 때는 “어느 층인가?”를 먼저 묻는다.
+
+---
+
+### D.2.2. 기본 진단 루프
+
+#### 1단계. 연결과 설치를 분리한다
+
+```bash
+dbt --version
+dbt debug
+```
+
+여기서 막히면 아직 모델 SQL로 넘어가면 안 된다.
+
+#### 2단계. 구조를 본다
+
+```bash
+dbt parse
+dbt ls -s my_model+
+```
+
+이 단계는 YAML, selector, DAG 범위를 검증한다.
+
+#### 3단계. SQL을 본다
+
+```bash
+dbt compile -s my_model
+dbt show --select my_model
+```
+
+Jinja, `source()`, `ref()`, macro 결과를 확인한다.
+
+#### 4단계. 최소 범위만 실행한다
+
+```bash
+dbt build -s my_model+
+```
+
+필요한 upstream/downstream만 포함한다.
+
+#### 5단계. artifacts로 원인을 남긴다
+
+확인 순서:
+
+1. `target/compiled/`
+2. `target/run/`
+3. `target/run_results.json`
+4. `target/manifest.json`
+5. `target/sources.json`
+6. `logs/dbt.log`
+
+---
+
+### D.2.3. Trino 연결 오류 카드 · `localhost:8080 connection refused`
+
+이 오류는 SQL이 틀린 것이 아니라 **Trino coordinator에 연결하지 못한 경우**에 가깝다.  
+업로드된 실제 장애 기록에서는 `./launcher run`으로 띄운 Trino가 죽어 있었고, `launcher.pid` 권한 문제 때문에 `sudo ./launcher run`으로 재기동해야 했다.
+
+대표 증상:
+
+```text
+HTTPConnectionPool(host='localhost', port=8080): Max retries exceeded
+Failed to establish a new connection: [Errno 111] Connection refused
+```
+
+먼저 볼 것:
+
+1. Trino coordinator가 떠 있는가
+2. `host`, `port`, `method`, `database`, `schema`가 profile과 일치하는가
+3. `dbt debug`가 통과하는가
+4. `curl http://localhost:8080/v1/info` 같은 health check가 되는가
+5. PID/권한 문제는 없는가
+
+Trino preflight 예시는 companion snippet에 포함되어 있다.
+
+```bash
+bash codes/04_chapter_snippets/app_d/trino_connection_preflight.sh
+```
+
+---
+
+### D.2.4. Trino incremental merge 오류 카드 · `dbt_internal_source.id cannot be resolved`
+
+이 오류는 대개 `incremental_strategy='merge'`와 `unique_key='id'`를 설정해 두고, **source 쪽 SELECT 결과에 `id` 컬럼이 없을 때** 발생한다.
+
+대표 증상:
+
+```text
+Column 'dbt_internal_source.id' cannot be resolved
+```
+
+이럴 때 묻는 질문:
+
+1. 최종 SELECT에 `id`가 진짜 존재하는가
+2. alias 때문에 이름이 바뀌진 않았는가
+3. 분기 SQL(`if/elif/else`)의 모든 경로에서 `id`를 반환하는가
+4. `run_query()` 결과에 따라 빈 경로나 다른 컬럼명이 나오지 않는가
+
+빠른 확인:
+
+```bash
+dbt compile -s case03_branch_query
+```
+
+그리고 `target/compiled/.../case03_branch_query.sql`에서 최종 SELECT 컬럼을 직접 본다.
+
+---
+
+### D.2.5. Trino incremental merge 오류 카드 · `dbt_internal_dest.id cannot be resolved`
+
+이번엔 반대다.  
+source SELECT에는 `id`가 있지만 **타겟 테이블에 `id` 컬럼이 없을 때** 난다.
+
+대표 증상:
+
+```text
+Column 'dbt_internal_dest.id' cannot be resolved
+```
+
+확인 순서:
+
+1. 기존 테이블 스키마를 직접 조회한다.
+2. target relation이 예전 구조로 남아 있지는 않은가
+3. full refresh가 필요한 구조 변경이었는가
+4. merge가 아니라 append/table로 가야 하는 모델은 아닌가
+
+빠른 확인 예시:
+
+```sql
+DESCRIBE iceberg.sample_db.case03_branch_query;
+```
+
+또는 companion snippet의 precheck SQL을 사용한다.
+
+```sql
+-- codes/04_chapter_snippets/app_d/trino_merge_unique_key_precheck.sql
+```
+
+---
+
+### D.2.6. `run_query()`가 compile/docs generate에서도 실행되는 문제
+
+`run_query()`는 Jinja helper지만, live connection이 있으면 **`dbt compile`이나 `dbt docs generate` 중에도 실제로 SQL을 날릴 수 있다**.  
+그래서 다음 원칙을 지켜야 한다.
+
+1. `if execute`로 감싼다.
+2. side effect가 있는 DML/DDL은 model body보다 `run-operation`이나 hook로 뺀다.
+3. compile 시점 기본값을 명시한다.
+4. 결과가 0행일 때 fallback을 둔다.
+
+안전한 패턴:
+
+```jinja
+{% set sql %}
+    select country_code
+    from {{ source('ops', 'country') }}
+{% endset %}
+
+{% if execute %}
+    {% set results = run_query(sql) %}
+    {% set country_list = results.columns[0].values() %}
+{% else %}
+    {% set country_list = [] %}
+{% endif %}
+```
+
+---
+
+### D.2.7. source freshness가 안 맞을 때
+
+대표 증상:
+
+- source freshness가 stale
+- 배치는 성공했는데 대시보드 수치가 어제 값
+- `dbt build --select source_status:fresher+`가 기대만큼 안 좁혀짐
+
+먼저 볼 것:
+
+1. source YAML의 `loaded_at_field`
+2. freshness 기준 (`warn_after`, `error_after`)
+3. source raw table의 실제 적재 시각
+4. `target/sources.json`
+5. upstream batch의 실패/지연 여부
+
+이 문제는 Event Stream casebook에서 가장 자주 드러난다.
+
+---
+
+### D.2.8. docs, Catalog, Studio, VS Code extension 혼동
+
+현재 운영 표면은 비슷해 보여도 서로 다르다.
+
+- **Core CLI**: `dbt docs generate`, `dbt docs serve`
+- **Fusion**: VS Code extension, Fusion CLI, supported-features matrix
+- **dbt platform**: Studio, Catalog, environments, jobs
+
+자주 생기는 오해:
+
+1. Core 프로젝트에 VS Code extension을 붙이려고 한다.
+2. Fusion에서 Core와 똑같이 local docs를 기대한다.
+3. Catalog와 `dbt docs`를 같은 것으로 본다.
+
+이건 “오류”라기보다 **실행 표면을 잘못 선택한 문제**다.
+
+---
+
+### D.2.9. 문제 해결 체크리스트 20
+
+아래는 실무에서 가장 자주 쓰는 체크리스트다.
+
+1. 가상환경이 활성화되어 있는가  
+2. `dbt --version`에 adapter가 함께 보이는가  
+3. `dbt debug`가 통과하는가  
+4. profile 이름과 `profiles.yml` 최상위 키가 같은가  
+5. `dbt parse`로 YAML 구조를 먼저 검증했는가  
+6. `dbt ls -s ...`로 selector 결과를 보았는가  
+7. 실패 범위를 `-s model_name`까지 줄였는가  
+8. `dbt compile -s ...`로 compiled SQL을 보았는가  
+9. `target/compiled`와 `target/run`을 구분해서 보고 있는가  
+10. `logs/dbt.log`를 열어 보았는가  
+11. `run_results.json`으로 실패 지점을 확인했는가  
+12. `sources.json`으로 freshness 상태를 확인했는가  
+13. `source()` / `ref()` 이름이 실제 정의와 같은가  
+14. relation 이름을 직접 하드코딩하지 않았는가  
+15. `unique_key`가 source와 target 양쪽에 존재하는가  
+16. `grain`을 문장으로 설명할 수 있는가  
+17. 문제를 데이터 품질과 로직 오류로 분리했는가  
+18. hook / `run_query()`가 compile 시점에도 실행될 수 있음을 고려했는가  
+19. platform/plan/engine 제약이 없는지 확인했는가  
+20. full refresh가 필요한 구조 변경인지 판단했는가  
+
+---
+
+## D.3. Decision Guides · 설계 선택을 위한 질문 순서
+
+![Appendix D Decision Surface](./images/app_d_decision-surface.svg)
+
+### D.3.1. materialization 선택표
+
+| 상황 | 추천 | 이유 | 지금 보류해야 할 경우 |
+| --- | --- | --- | --- |
+| 모델이 아직 자주 바뀌고 빠르게 확인해야 한다 | `view` | 수정-재실행 루프가 빠르다 | 조회 비용/지연이 이미 문제라면 `table` 검토 |
+| downstream 조회가 많고 결과를 안정적으로 재사용해야 한다 | `table` | 읽기 속도와 예측 가능성이 높다 | 전체 재생성 비용이 너무 크면 incremental 고민 |
+| append 중심 대용량이고 `unique_key`와 재처리 기준이 명확하다 | `incremental` | 전체 재생성 비용을 줄인다 | late-arriving / lookback 규칙이 비어 있으면 아직 금지 |
+| 아주 작은 helper 로직을 인라인해도 충분하다 | `ephemeral` | relation을 만들지 않고 SQL만 재사용 | 재사용/디버깅 포인트가 필요하면 view/table |
+
+한 문장 규칙:  
+**정확한 모델 구조와 테스트가 먼저고, incremental은 그다음 최적화다.**
+
+---
+
+### D.3.2. snapshot을 언제 쓰는가
+
+| 질문 | snapshot | 다른 대안 |
+| --- | --- | --- |
+| 현재 상태만 있는 테이블에서 과거 상태 이력이 필요하다 | 예 | snapshot |
+| 원천이 이미 CDC / history table을 제공한다 | 아니오 | 그 이력 source를 그대로 모델링 |
+| 작은 코드 매핑이나 상태 사전이다 | 아니오 | seed |
+| 상태 변화 시점을 나중에 분석해야 한다 | 예 | check / timestamp strategy 검토 |
+
+Subscription & Billing casebook에서는 status history가 필요할 때 snapshot이 자연스럽다.
+
+---
+
+### D.3.3. intermediate를 언제 만드는가
+
+| 징후 | intermediate로 올릴까? | 설명 |
+| --- | --- | --- |
+| 같은 join이 mart 두세 곳에 반복된다 | 예 | 재사용 가능한 join/logic을 한 번으로 모은다 |
+| line grain 계산이 있고 여러 최종 모델이 소비한다 | 예 | mart마다 fanout 설명을 줄인다 |
+| 한 mart 안에서만 한 번 쓰이고 다시 설명할 필요가 없다 | 아니오 | 파일 수만 늘 수 있다 |
+| staging이 giant SQL처럼 길어지고 rename·join·집계가 섞인다 | 예 | 책임 경계를 다시 나눌 신호다 |
+
+Retail Orders의 `int_order_lines`, Event Stream의 `int_sessions`, Subscription의 `int_subscription_status_daily`가 대표 예다.
+
+---
+
+### D.3.4. macro를 언제 묶는가
+
+| 질문 | macro로 묶기 | 그냥 SQL로 둔다 |
+| --- | --- | --- |
+| 같은 SQL 조각이 세 번 이상 반복되고 함께 바뀌어야 하는가 | 예 | 반복 제거와 변경 일관성 |
+| 모델 로직보다 템플릿 문법이 더 많이 보이는가 | 아니오 | 가독성이 먼저 |
+| 팀원이 compiled SQL 없이 읽기 어려운가 | 아니오 | 추상화가 과한 신호 |
+| 환경 변수 주입이나 가벼운 포맷 변환 정도인가 | 예 | macro가 잘 맞는다 |
+
+---
+
+### D.3.5. `run_query()`를 쓸까, operation으로 뺄까
+
+| 상황 | 추천 | 이유 |
+| --- | --- | --- |
+| 조회 결과로 분기할 뿐이고 side effect가 없다 | `run_query()` + `if execute` | model/Jinja 안에서 안전하게 제어 가능 |
+| DDL/DML을 직접 실행해야 한다 | `dbt run-operation` / hook | compile/docs generate 중 side effect 방지 |
+| 반복 실행·로깅·배치 파라미터가 중요하다 | hook + `var()` + operation | 운영형 실행 흐름과 잘 맞는다 |
+
+업로드된 Trino 예시의 logging macro와 `case02~06`은 이 기준으로 읽으면 된다.
+
+---
+
+### D.3.6. package dependency vs project dependency
+
+| 질문 | package dependency | project dependency |
+| --- | --- | --- |
+| 다른 프로젝트의 전체 소스코드를 함께 설치해도 되는가 | 예 | package로 충분 |
+| cross-project ref와 메타데이터 서비스가 필요한가 | 아니오 | project dependency 검토 |
+| dbt platform Enterprise / Enterprise+가 있는가 | 없어도 됨 | 있어야 의미 있음 |
+| “코드 재사용”이 중심인가 “공개 모델 API”가 중심인가 | 코드 재사용 | 공개 모델 API |
+
+---
+
+### D.3.7. Core / Fusion / dbt platform 중 어디를 쓸까
+
+| 지금 목적 | 추천 표면 | 이유 |
+| --- | --- | --- |
+| 로컬에서 CLI와 파일 중심으로 배우고 싶다 | Core CLI | 가장 직관적이고 교재와 잘 맞다 |
+| Fusion 기반 개발 경험과 extension을 쓰고 싶다 | Fusion + VS Code extension | extension은 Fusion 전용 |
+| jobs / Catalog / Studio / account-level 운영이 필요하다 | dbt platform | 운영 표면과 메타데이터 경험이 다르다 |
+
+---
+
+### D.3.8. state / defer / clone을 언제 쓰나
+
+| 상황 | 먼저 볼 것 | 이유 |
+| --- | --- | --- |
+| PR CI에서 수정 범위만 빠르게 검증하고 싶다 | `state:modified+` | 변경된 노드와 downstream만 좁힐 수 있다 |
+| 개발 환경에 없는 upstream relation 때문에 CI가 실패한다 | `--defer` | applied state relation을 참조 |
+| 반복 개발에서 relation 준비 비용이 크다 | `dbt clone` | zero-copy clone 계열 플랫폼에서 유리 |
+| 실패 지점부터 다시 이어가고 싶다 | `dbt retry` | 직전 `run_results.json` 기준 재시도 |
+
+---
+
+## D.4. Glossary · 용어집
+
+### D.4.1. 핵심 용어
+
+| 용어 | 설명 |
 | --- | --- |
-| adapter | dbt가 각 데이터플랫폼과 통신하기 위해 쓰는 플러그인 |
-| artifact | dbt 실행 후 남는 JSON 산출물. manifest.json, run_results.json, sources.json 등이 있다 |
+| adapter | dbt가 데이터플랫폼과 통신하기 위해 쓰는 플러그인 |
+| artifact | dbt 실행 후 남는 JSON 산출물. `manifest.json`, `run_results.json`, `sources.json` 등이 있다 |
 | contract | 모델이 반환해야 하는 컬럼 형태와 타입에 대한 약속 |
 | defer | 현재 환경에 없는 upstream 리소스를 기준 환경의 relation로 참조하는 기능 |
 | exposure | 대시보드·앱 등 downstream 사용처를 DAG에 연결하는 정의 |
 | freshness | 원천 또는 모델이 얼마나 최근 상태인지 측정하는 기준 |
 | grain | 모델 한 행이 무엇을 대표하는지에 대한 약속 |
-| materialization | 모델 결과를 어떤 형태(view/table/incremental 등)로 남길지 정하는 설정 |
+| hook | 실행 전후에 추가 SQL/동작을 붙이는 config |
+| invocation_id | dbt run 한 번을 식별하는 실행 단위 ID |
+| materialization | 모델 결과를 어떤 형태로 남길지 정하는 설정 |
+| metric | 질문 가능한 지표 정의 |
 | node | 모델·테스트·seed·snapshot 등 DAG를 구성하는 리소스 하나 |
-| relation | 데이터플랫폼에 실제로 존재하는 table/view 등의 객체 |
-| selector | 실행할 노드를 고르는 문법(--select, tags, state 등) |
+| relation | warehouse에 실제로 존재하는 table / view 같은 객체 |
+| saved query | semantic surface 위에서 미리 정의한 질의 |
+| selector | 실행할 노드를 고르는 문법 (`--select`, tags, state 등) |
+| singular test | 자유 SQL로 작성하는 테스트 |
+| source | 프로젝트 외부 입력으로 선언된 원천 테이블 |
+| state | 이전 실행/기준 환경의 metadata 상태 |
+| unique_key | incremental / snapshot에서 레코드를 식별하는 키 |
+| unit test | 작은 입력/기대 출력으로 로직을 검증하는 테스트 |
 
-## D.3. 공식 자료와 추가 학습 순서
+---
 
-| 공식 문서 제목(검색 키워드) | 왜 중요한가 |
-| --- | --- |
-| Install dbt / Install and configure the dbt VS Code extension | Core·Fusion·extension의 현재 공식 설치 흐름 확인 |
-| Add sources to your DAG / Source freshness | source 계약과 freshness 운영 기준 |
-| Add data tests to your DAG / About data tests property | generic·singular test와 data_tests 구조 |
-| Unit tests | 작은 입력/기대 출력 방식의 로직 검증 |
-| Add snapshots to your DAG / Snapshot configurations | YAML 기반 snapshot과 이력 해석 |
-| About dbt artifacts / Manifest JSON / Run results JSON | docs, state, freshness, 실행 결과 이해 |
-| About state in dbt / Defer / About dbt clone command | slim CI와 환경 defer 흐름 |
-| Packages / About dbt deps command | 패키지 설치와 버전 관리 |
-| Model contracts / Add Exposures to your DAG | 팀 운영 확장과 downstream 연결 |
-| About dbt show command / dbt command reference | 개발 루틴과 명령 참조 |
+## D.5. Official Sources · 공식 자료를 어떤 순서로 볼까
 
-**추천 학습 순서**
+### D.5.1. 추천 조회 순서
 
-기본기 → 모델링 → 테스트 → 디버깅 → 운영 → 플랫폼별 최적화 순서로 가면 가장 덜 흔들린다. 처음부터 platform-specific 고급 최적화를 파고들기보다 공통 개념을 먼저 몸에 익히자.
+1. **현재 표면이 Core인지 Fusion인지 platform인지 먼저 확인**
+2. **설치/가용성/plan 제약 문서를 먼저 확인**
+3. 그다음 개별 기능 문서로 들어간다.
+4. 마지막에 changelog / release track / support matrix를 본다.
 
-## D.4. 현업 시나리오 실전 지도
+### D.5.2. 주제별 공식 문서 지도
 
-**이 appendix를 이렇게 쓰세요**
+| 주제 | 문서 키워드 | 왜 먼저 봐야 하나 |
+| --- | --- | --- |
+| 설치와 실행 표면 | `Install dbt`, `Install dbt extension`, `Fusion quickstart` | Core / Fusion / extension 혼동 방지 |
+| source와 freshness | `Add sources to your DAG`, `Source freshness` | lineage와 freshness는 source 계약의 출발점 |
+| tests | `Add data tests to your DAG`, `Unit tests` | generic / singular / unit 역할 분리 |
+| snapshots | `Add snapshots to your DAG`, `Snapshot configurations` | YAML snapshot 권장 흐름과 이력 해석 |
+| artifacts | `About dbt artifacts`, `run_results.json`, `manifest.json` | state / docs / failure triage 기준 |
+| selectors | `Graph operators`, `node selection`, `selectors` | CI와 디버깅 범위를 줄이는 핵심 |
+| 운영 | `Defer`, `clone`, `retry`, `continuous integration` | slim CI와 applied state 운영 |
+| packages / mesh | `Packages`, `Project dependencies`, `Mesh` | 코드 재사용과 cross-project ref 구분 |
+| governance | `Model governance`, `Model access`, `Model versions` | public surface와 안정성 관리 |
+| semantic | `dbt Semantic Layer`, `saved queries`, `exports`, `cache` | metric surface와 plan/engine 제약 |
+| release / support | `Release tracks`, `About dbt versions`, `Fusion supported features` | 최신 가용성 확인 |
 
-- 요청 문장을 그대로 믿기보다, 먼저 “어느 grain에서 어떤 business rule을 바꾸라는 말인가?”로 다시 번역한다.
-- 수정 후보는 가능하면 mart → intermediate → staging 순으로 가깝게 찾는다. 원천 정리 문제면 staging, 재사용 조인이면 intermediate, KPI 규칙이면 marts 쪽일 확률이 높다.
-- 수정 전후에는 모델 SQL만 보지 말고 test, docs, PR 설명까지 같이 바꿔야 팀 규칙으로 남는다.
-아래 시나리오들은 companion ZIP의 field_guide/ 폴더와 1:1로 맞춰 두었다.
+---
 
-### D.4.1. 요청을 dbt 작업으로 바꾸는 4단계
+## D.6. Support Matrix · Core / Fusion / dbt platform / Plan 차이를 한눈에 보기
+
+![Appendix D Support Matrix](./images/app_d_support-matrix-map.svg)
+
+아래 표는 책을 읽는 관점에서의 **실무형 요약표**다.  
+정확한 rollout 전에는 반드시 공식 문서를 다시 확인해야 한다.
+
+| 기능/표면 | Core CLI | Fusion local | dbt platform | 주의점 |
+| --- | --- | --- | --- | --- |
+| 로컬 CLI 실행 (`run`, `build`, `test`) | 예 | 예 | 일부는 Studio/Jobs로 대체 | 실행 표면이 다르다 |
+| `dbt docs generate/serve` 로컬 docs | 예 | 제한/미지원 구간 있음 | Catalog가 기본 경험 | local docs가 꼭 필요하면 Core가 안전 |
+| VS Code extension | 아니오 | 예 | 해당 없음 | extension은 Fusion 전용 |
+| packages (`dbt deps`) | 예 | 예 | 예 | package와 project dependency는 다르다 |
+| source freshness | 예 | 예 | 예 | `sources.json` artifact 확인 |
+| state / defer / clone | 예 | 예 | CI/Jobs와 함께 더 자주 씀 | applied state 운영이 중요 |
+| model governance (access, contracts, versions) | 예 | 예 | 예 | plan/표면별 차이 존재 |
+| project dependency / cross-project ref | package 방식만 일반적 | 일부/메타데이터 연동 | Enterprise / Enterprise+ 중심 | package와 혼동 금지 |
+| Semantic Layer API / integrations | 제한적(local query 중심) | 예 | Starter+ / Enterprise+ 기능 차이 | caching/exports는 plan 차이 큼 |
+| Catalog / multi-project explore | 아니오 | 아니오 | platform 기능 | Starter와 Enterprise 범위 차이 |
+| Copilot / MCP / Studio AI surface | 아니오 | Fusion/platform 중심 | platform 중심 | 빠르게 변하는 영역 |
+
+### D.6.1. 지원 매트릭스를 읽는 법
+
+1. **엔진 표면**과 **플랜 가용성**을 분리한다.
+2. “Core에서 전혀 못 쓴다”와 “Core에선 다른 형태로만 쓴다”를 구분한다.
+3. Semantic, Mesh, Catalog, Copilot처럼 빠르게 변하는 영역은 rollout 직전에 공식 문서를 다시 본다.
+4. 교재 예제는 우선 Core-compatible 경로를 중심으로 따라가고, platform 기능은 나중에 확장한다.
+
+---
+
+## D.7. 현업 시나리오 실전 지도
+
+### D.7.1. 요청을 dbt 작업으로 바꾸는 4단계
 
 | 단계 | 질문 | 예시 | 산출물 |
 | --- | --- | --- | --- |
-| 1 | 요청문이 바꾸려는 규칙은 무엇인가? | “취소 주문은 총액에서 빼 주세요” | rule memo 한 줄 |
-| 2 | 그 규칙은 어느 grain에서 정의되어야 하나? | order grain / line grain / customer grain | 수정할 레이어 후보 |
-| 3 | 가장 가까운 모델은 어디인가? | stg_orders / int_order_lines / fct_orders | 편집 대상 SQL/YML |
+| 1 | 요청문이 바꾸려는 규칙은 무엇인가? | “취소 주문은 총액에서 빼 주세요” | rule memo |
+| 2 | 그 규칙은 어느 grain에서 정의돼야 하는가? | order grain / line grain / customer grain | 수정 레이어 후보 |
+| 3 | 가장 가까운 모델은 어디인가? | `stg_orders`, `int_order_lines`, `fct_orders` | 편집 대상 SQL/YML |
 | 4 | 무엇으로 검증하고 남길 것인가? | unit test, data test, docs, PR 설명 | review-ready 변경 묶음 |
 
-> 가장 중요한 질문은 “이 규칙이 어디서 살아야 가장 재사용 가능하고, 가장 덜 놀라운가?”다.
+가장 중요한 질문은 이것이다.
 
-### D.4.2. 시나리오 카드 1 - “취소 주문을 매출에서 제외해 주세요”
+> 이 규칙이 어디서 살아야 가장 재사용 가능하고, 가장 덜 놀라운가?
+
+---
+
+### D.7.2. 시나리오 카드 1 · “취소 주문을 매출에서 제외해 주세요”
 
 | 항목 | 실무 해석 |
 | --- | --- |
-| 요청 | “매출 계산에서 취소 주문을 제외해 주세요.” |
-| 보통 수정 위치 | staging에서는 status 정리만 하고, 최종 집계 규칙은 fct_orders 같은 mart에 둔다. |
-| 먼저 실행할 명령 | dbt build -s fct_orders+ dbt test -s fct_orders+ dbt show --select fct_orders |
-| 같이 바꿔야 할 것 | 취소 주문 예외를 검증하는 unit test, gross_revenue / order_amount 설명, PR 메모 |
+| 보통 수정 위치 | staging이 아니라 `fct_orders` 같은 mart 집계 규칙 |
+| 먼저 실행할 명령 | `dbt build -s fct_orders+` / `dbt show --select fct_orders` |
+| 같이 바꿔야 할 것 | unit test, docs, PR 설명 |
 | 리뷰어에게 남길 한 줄 | “주문 grain 집계 규칙만 바꾸고 staging의 status 표준화는 유지했다.” |
 
-**헷갈리기 쉬운 지점**
+---
 
-- status 값 자체를 고치는 일과 status를 이용해 KPI를 다르게 계산하는 일은 같은 변경이 아니다.
-- 취소 규칙이 여러 mart에서 재사용된다면 intermediate에 공통 flag를 올리고, 집계 자체는 marts에서 한다.
+### D.7.3. 시나리오 카드 2 · “오늘 매출이 두 배로 나왔어요”
 
-### D.4.3. 시나리오 카드 2 - “오늘 매출이 두 배로 나왔어요”
+이 경우는 “SQL 어디가 틀렸지?”보다 먼저 **grain이 바뀌었나 / fanout이 생겼나**를 본다.
 
-이 경우는 “어디 SQL이 틀렸지?”보다 먼저 “grain이 바뀌었나? join fanout이 생겼나?”를 의심하는 편이 훨씬 빠르다.
+빠른 확인:
 
-![그림 H-1. order grain 모델이 line grain 조인을 그대로 합치면 금액이 두 배처럼 보일 수 있다.](../assets/005-grain과-fanout의-위험을-그림으로-보기.png)
+```sql
+select count(*) as rows_all,
+       count(distinct order_id) as rows_distinct_order
+from {{ ref('int_order_lines') }};
+```
 
-*그림 H-1. order grain 모델이 line grain 조인을 그대로 합치면 금액이 두 배처럼 보일 수 있다.*
+문제 해결 루프:
 
-| 먼저 볼 것 | 왜 보나 | 빠른 확인 |
-| --- | --- | --- |
-| int_order_lines row 수 | line grain이 얼마나 늘어났는지 본다 | count(*) / count(distinct order_id) |
-| fct_orders 집계 방식 | order grain으로 다시 묶였는지 확인한다 | group by order_id, customer_id |
-| line_amount vs total_amount | 같은 금액을 두 번 더하고 있지 않은지 본다 | gross_revenue 와 order_amount 비교 |
-| relationships / singular test | 키 누락인지, 집계 규칙 문제인지 구분한다 | 테스트 실패 메시지와 쿼리 함께 확인 |
+1. `dbt ls -s +fct_orders+`
+2. `dbt compile -s fct_orders`
+3. join 직후 row 수 확인
+4. mart에서 다시 grain을 묶는지 확인
+5. singular test / unit test로 재발 방지
 
-**복구 루틴**
+---
 
-- dbt ls -s +fct_orders+ 로 범위를 먼저 좁힌다.
-- dbt compile -s fct_orders 로 최종 SQL을 보고, join 직후 row 수와 group by 위치를 확인한다.
-- 필요하면 intermediate에서 line grain을 유지하고 mart에서 order grain으로 다시 집계한다.
+### D.7.4. 시나리오 카드 3 · “새 raw 원천을 추가해 주세요”
 
-### D.4.4. 시나리오 카드 3 - “새 원천 테이블 reviews 를 추가해 주세요”
+안전한 순서:
 
-| 항목 | 실무 해석 |
-| --- | --- |
-| 요청 | “product_reviews raw 테이블이 추가됐어요. 별점 평균과 리뷰 수를 보고 싶어요.” |
-| 먼저 바꿀 파일 | models/sources.yml → models/staging/stg_reviews.sql → intermediate 또는 marts |
-| 안전한 첫 단계 | 리뷰 원천을 source로 선언하고 staging에서 타입 / null / 상태값만 정리한다. |
-| 그다음 질문 | 리뷰는 주문과 1:1인가, 상품과 1:N인가, 일자별 분석이 필요한가? |
-| 권장 검증 | not_null(review_id), relationships(product_id), accepted_values(review_status) |
-| 권장 실행 | dbt parse → dbt build -s stg_reviews+ → dbt docs generate |
+1. `sources.yml`에 추가
+2. staging에서 타입/상태만 정리
+3. 필요하면 intermediate로 재사용 join 분리
+4. mart로 KPI surface 올리기
+5. docs / tests / selector 갱신
 
-### D.4.5. 시나리오 카드 4 - “오늘은 필요한 범위만 다시 돌리고 싶어요”
+---
+
+### D.7.5. 시나리오 카드 4 · “오늘은 필요한 범위만 다시 돌리고 싶어요”
 
 | 상황 | 먼저 할 일 | 왜 이 순서인가 |
 | --- | --- | --- |
-| 소스 적재가 늦어 일부 모델만 다시 돌리고 싶다 | dbt source freshness | freshness 기준을 먼저 갱신해야 fresher source를 고를 수 있다 |
-| fresher source downstream만 다시 빌드하고 싶다 | dbt build --select source_status:fresher+ | 필요한 범위만 다시 돌려 비용과 시간을 줄인다 |
-| source freshness 결과를 확인하고 싶다 | target/sources.json 확인 | 어느 source가 fresher / stale 인지 artifact로 남는다 |
-| PR CI에서만 upstream relation이 없어 실패한다 | state:modified+ 와 --defer 적용 여부 확인 | 개발 환경에 없는 upstream을 applied state로 참조하게 해 준다 |
-| zero-copy clone이 가능한 플랫폼에서 반복 비용이 크다 | dbt clone 검토 | 개발용 relation 준비 시간을 줄이는 선택지다 |
+| source 적재가 늦어 일부 모델만 다시 돌리고 싶다 | `dbt source freshness` | freshness 기준을 먼저 갱신 |
+| fresher source downstream만 다시 빌드하고 싶다 | `dbt build --select source_status:fresher+` | 비용과 시간을 함께 줄인다 |
+| PR CI에서 upstream relation이 없다 | `state:modified+` 와 `--defer` 확인 | 적용된 기준 relation을 참조하게 한다 |
+| 반복 개발에서 relation 준비 비용이 크다 | `dbt clone` 검토 | zero-copy clone 계열 플랫폼에서 유리 |
 
-**팀 규칙 템플릿 초안**
+---
 
-- 원천을 읽는 첫 모델은 반드시 source()에서 시작한다.
-- join 전에 각 모델의 grain을 문장으로 남긴다.
-- fct 계열 모델에는 최소 not_null / unique / relationships 중 필요한 테스트를 붙인다.
-- incremental 도입 전에는 unique_key, late-arriving data, full-refresh 기준을 리뷰에서 확인한다.
-- PR 설명에는 변경된 business rule, 영향 받는 모델, 확인한 selector 범위를 적는다.
-companion ZIP의 templates/team_dbt_rules_template.md에 같은 문장을 바로 수정 가능한 형태로 넣어 두었다.
+## D.8. 팀 규칙 템플릿 초안
 
-## D.5. 의사결정 가이드
+아래는 책 전반의 운영 원칙을 팀 규칙으로 옮긴 초안이다.
 
-**답을 외우기보다 질문 순서를 익히세요**
+1. 원천을 읽는 첫 모델은 반드시 `source()`에서 시작한다.
+2. join 전에 각 모델의 grain을 문장으로 남긴다.
+3. fact 계열 모델에는 최소 `not_null`, `unique`, `relationships` 중 필요한 테스트를 붙인다.
+4. incremental 도입 전에는 `unique_key`, late-arriving data, full-refresh 기준을 리뷰에서 확인한다.
+5. `run_query()`는 `if execute`와 fallback 없이 쓰지 않는다.
+6. hook / operation은 compile 시점 side effect를 고려해 분리한다.
+7. PR 설명에는 변경된 business rule, 영향 받는 모델, 확인한 selector 범위를 적는다.
+8. platform/plan/engine 제약이 있는 기능은 rollout 전에 공식 문서를 다시 확인한다.
 
-- 이 모델은 아직 자주 바뀌는가, 아니면 이미 안정화됐는가?
-- 한 행이 대표하는 grain은 무엇인가?
-- 나중에 다시 설명해야 할 규칙인가, 지금 한 번만 필요한 로직인가?
-- 전체를 돌려도 되는가, 아니면 selector를 줄여야 비용과 시간이 맞는가?
+---
 
-### D.5.1. materialization 선택표
+## D.9. 직접 해보기
 
-| 상황 | 추천 | 이유 | 지금 보류해야 할 경우 |
-| --- | --- | --- | --- |
-| 모델이 아직 자주 바뀌고 빠르게 눈으로 확인해야 한다 | view | 수정-재실행 루프가 빠르다 | 조회 비용/지연이 이미 문제라면 table 검토 |
-| downstream 조회가 많고 결과를 안정적으로 재사용해야 한다 | table | 읽기 속도와 예측 가능성이 높다 | 전체 재생성 비용이 너무 크면 incremental 고민 |
-| append 중심 대용량이고 unique_key 와 재처리 기준이 명확하다 | incremental | 전체 재생성 비용을 줄인다 | late-arriving data 규칙이 비어 있으면 아직 금지 |
-| 아주 작은 helper 로직을 한 번만 인라인해도 충분하다 | ephemeral | 파일은 나누되 별도 relation은 만들지 않는다 | 재사용/디버깅 포인트가 필요하면 view/table |
-
-**한 문장 규칙**
-
-- 정확한 모델 구조와 테스트가 먼저고, incremental은 그다음 최적화다.
-
-### D.5.2. snapshot을 언제 쓰나
-
-| 질문 | snapshot | 대안 |
-| --- | --- | --- |
-| 현재 상태만 있는 테이블에서 과거 상태 이력이 필요하다 | 예 | snapshot으로 row version 보존 |
-| 원천이 이미 CDC / history table을 제공한다 | 아니오 | 그 이력 source를 그대로 모델링 |
-| 작은 코드 매핑이나 상태 사전이다 | 아니오 | seed 사용 |
-| 변경 빈도가 낮지만 상태 변화 시점을 나중에 분석해야 한다 | 예 | check / timestamp 전략 검토 |
-
-### D.5.3. intermediate를 언제 만든다
-
-| 징후 | intermediate로 올릴까? | 설명 |
-| --- | --- | --- |
-| 같은 join 이 mart 두세 곳에 반복된다 | 예 | 재사용 가능한 join/logic을 한 번으로 모은다 |
-| line grain 계산이 있고 그 결과를 여러 최종 모델이 소비한다 | 예 | mart마다 중복 집계와 fanout 설명을 줄인다 |
-| 해당 로직이 한 mart 안에서만 한 번 쓰이고 다시 설명할 필요가 없다 | 아니오 | 오히려 파일 수만 늘릴 수 있다 |
-| staging이 giant SQL처럼 길어지고 rename·join·집계가 섞인다 | 예 | 책임 경계를 다시 나누는 신호다 |
-
-### D.5.4. macro를 언제 묶나
-
-| 질문 | macro로 묶기 | 그냥 SQL로 둔다 |
-| --- | --- | --- |
-| 같은 SQL 조각이 세 번 이상 반복되고 함께 바뀌어야 하는가? | 예 | 반복 제거와 변경 일관성 |
-| 모델 로직보다 템플릿 문법이 더 많이 보이기 시작하는가? | 아니오 | 가독성이 먼저 |
-| 팀원이 compiled SQL 없이 읽기 어려운가? | 아니오 | 추상화가 과한 신호 |
-| 환경 변수 주입이나 가벼운 포맷 변환 정도인가? | 예 | macro가 잘 맞는다 |
-
-### D.5.5. 테스트 범위를 어디까지 붙일까
-
-| 모델 종류 | 최소 권장 | unit test를 특히 붙일 때 | docs에 적을 것 |
-| --- | --- | --- | --- |
-| staging | 핵심 키 not_null, accepted_values | 상태 표준화 규칙이 복잡할 때 | 원천 컬럼 → 표준 컬럼 대응 |
-| dimension | unique, not_null, relationships | SCD/상태 해석 로직이 있을 때 | business key, 제외 규칙 |
-| fact | unique key, relationships, singular revenue checks | 합계/할인/취소 규칙이 섬세할 때 | grain, KPI 정의, 제외 기준 |
-| intermediate | 필요 최소 테스트 + downstream fact unit test 보강 | fanout / 분기 로직이 있을 때 | 왜 이 join이 reusable인지 |
-
-### D.5.6. 비용·속도까지 고려한 명령 선택
-
-| 지금 목적 | 먼저 쓸 명령 | 전체 build로 바로 가지 않는 이유 |
-| --- | --- | --- |
-| 설치/연결 확인 | dbt debug | 연결 문제와 SQL 문제를 섞지 않기 위해 |
-| selector 범위 미리 확인 | dbt ls -s ... | 잘못된 범위를 오래 돌리지 않기 위해 |
-| 모델 SQL만 보고 싶다 | dbt compile -s model | Jinja/ref 결과를 먼저 확인하기 위해 |
-| 한 모델과 downstream 테스트까지 보고 싶다 | dbt build -s model+ | 필요한 영향 범위만 검증하기 위해 |
-| 소스 변화분만 다시 돌리고 싶다 | dbt source freshness → dbt build --select source_status:fresher+ | 비용과 시간을 함께 줄이기 위해 |
-
-## D.6. 장별 1분 복습 퀴즈와 자기 점검
-
-**이 부록의 목표**
-
-- 정답을 길게 적는 것이 목표가 아니다. 장마다 핵심 키워드가 바로 떠오르면 충분하다.
-- 모르는 문항은 해당 장으로 즉시 돌아가고, 다시 읽은 뒤 한 줄로 설명해 보는 것이 가장 빠른 복습이다.
-
-### D.6.1. 01~05장 1분 퀴즈
-
-| 장 | 질문 | 정답 키워드 |
-| --- | --- | --- |
-| 01 | dbt는 어디에 있는 도구인가? | 변환 계층 / 프로젝트 관리 / lineage |
-| 02 | 왜 이 책은 Core + DuckDB로 시작하나? | 재현성 / 설치 단순화 / 비용 없음 |
-| 03 | dbt_project.yml 과 profiles.yml 의 차이는? | 운영 규칙 vs 연결 정보 |
-| 04 | 첫 완주 루틴의 다섯 단계는? | source → run/build → test → docs |
-| 05 | source() 와 ref() 의 차이는? | 외부 입력 vs 내부 산출물 |
-
-### D.6.2. 06~10장 1분 퀴즈
-
-| 장 | 질문 | 정답 키워드 |
-| --- | --- | --- |
-| 06 | model+ 와 +model 의 차이는? | downstream 포함 vs upstream 포함 |
-| 07 | join 전에 꼭 적어야 하는 한 문장은? | 각 모델의 grain |
-| 08 | incremental 전에 먼저 정해야 하는 세 가지는? | unique_key / 재처리 기준 / full-refresh 전략 |
-| 09 | generic · singular · unit test 는 각각 무엇을 보나? | 품질 / 자유 검증 / 로직 |
-| 10 | snapshot은 언제 유용한가? | 현재 상태만 있는 테이블의 과거 변화 추적 |
-
-### D.6.3. 11~15장 1분 퀴즈
-
-| 장 | 질문 | 정답 키워드 |
-| --- | --- | --- |
-| 11 | macro를 너무 빨리 쓰면 왜 어려워지나? | 가독성·디버깅 저하 |
-| 12 | 막혔을 때 기본 루틴은? | debug → parse → ls → compile → run/build |
-| 13 | dev / prod 분리가 필요한 이유는? | 안전한 개발·배포 / 권한·검증 분리 |
-| 14 | 플랫폼을 옮겨도 거의 그대로 남는 공통 개념은? | source/ref/test/docs/lineage |
-| 15 | 예제 프로젝트를 자기 조직에 옮길 때 제일 먼저 정할 것은? | grain 과 business key |
-
-### D.6.4. 최종 자기 점검
-
-| 나는 지금 이것을 할 수 있는가? | 예 / 아직 | 다시 볼 장 |
-| --- | --- | --- |
-| source freshness 결과를 보고 downstream만 다시 돌릴 수 있다 | □ 예 □ 아직 | 05, 13 |
-| fanout이 의심될 때 line grain과 order grain을 구분해서 설명할 수 있다 | □ 예 □ 아직 | 07, 12 |
-| incremental 도입 전 체크리스트를 말할 수 있다 | □ 예 □ 아직 | 08 |
-| generic / singular / unit test를 언제 붙일지 고를 수 있다 | □ 예 □ 아직 | 09 |
-| snapshot이 필요한 경우와 seed로 충분한 경우를 구분할 수 있다 | □ 예 □ 아직 | 10, I |
-| state:modified, --defer, dbt clone이 왜 나오는지 큰 그림을 설명할 수 있다 | □ 예 □ 아직 | 13, H |
-| 새 raw 테이블이 들어오면 source → staging → mart까지 어디를 바꿔야 하는지 안다 | □ 예 □ 아직 | 15, H |
-
-**마지막 캡스톤 미션**
-
-- 예제 프로젝트에 source freshness 기준을 하나 추가하고, fresher source만 다시 도는 명령을 직접 적어 본다.
-- fct_orders 에 singular test 하나와 unit test 하나를 더 붙이고, 왜 두 테스트가 다른지 설명해 본다.
-- 팀 규칙 템플릿에서 우리 팀에 꼭 필요한 규칙 3개를 골라 PR 설명 예시와 함께 적어 본다.
-이 세 가지를 손으로 해보면, 책의 개념이 거의 전부 “내 프로젝트에 옮길 수 있는 단위”로 바뀐다.
-
-## D.7. 올인원 기능 지도와 버전·엔진 체크포인트
-
-*기능별 체크 포인트*
-
-| 기능 영역 | 실무에서 무엇을 확인할까 | 버전/엔진/플랜 메모 |
-| --- | --- | --- |
-| Source freshness | loaded_at_field, warn_after/error_after, source_status selector | source freshness는 sources.json과 downstream build 전략에 직접 연결된다 |
-| Incremental / microbatch | unique_key, incremental_strategy, event_time, lookback | microbatch와 event_time은 최신 버전/track에서 특히 중요하다 |
-| Snapshot | YAML-based snapshot config, hard delete 정책 | 신규 snapshot은 YAML 구성이 권장된다 |
-| State / defer / clone | prod artifact 보관, slim CI selector, clone 대상 태그 | 대규모 프로젝트일수록 가치가 커진다 |
-| Contracts / constraints | public model부터 enforced contract 적용 | constraint 지원 범위는 플랫폼마다 다르다 |
-| Access / groups / versions | 누가 ref할 수 있는가, owner는 누구인가, v1/v2 이행 전략 | mesh나 다팀 협업에서 급격히 중요해진다 |
-| Semantic layer | semantic model, metrics, saved queries, exposures 연결 | spec과 소비 도구 연동 범위는 엔진/버전에 민감할 수 있다 |
-| Python models / functions | 지원 adapter, materialization, execution framework | Python models와 Python UDF는 adapter 지원 범위를 반드시 확인한다 |
-| Packages / dependencies | dbt Hub package인지, cross-project dependency인지 구분 | packages.yml과 dependencies.yml은 목적이 다르다 |
-| Platform tuning | BigQuery 비용, ClickHouse engine, Snowflake warehouse, Postgres MV | 같은 개념도 최적화 포인트는 플랫폼마다 달라진다 |
-
-이 표는 “기능 전체 지도” 역할을 한다. 처음에는 왼쪽 열만 보아도 좋고, 실제 도입 단계에서는 가운데 열을 체크리스트처럼 활용하면 된다. 오른쪽 열은 최신 버전과 엔진 차이에 민감한 기능을 표시한 것이므로, 실제 배포 전에 공식 문서를 다시 확인하는 기준점으로 삼자.
-
-## D.8. 기능 가용성 배지와 지원 매트릭스
-
-### D.8.1. 이 책에서 쓰는 배지를 먼저 정리
-
-올인원 책이 되면서 “기능을 아는 것”만큼 “그 기능이 어디서 되는가”를 구분하는 일이 중요해졌다. 같은 YAML을 본다고 해도 local Core에서 바로 실행되는 경우와, dbt platform 계정·특정 plan·특정 adapter가 있어야 체감되는 경우가 분명히 다르다.
-
-| 배지 | 뜻 | 대표 예시 |
-| --- | --- | --- |
-| Core | 로컬 dbt Core CLI에서 이해·실행 가능한 축 | models, tests, docs, selectors, packages |
-| Fusion | Fusion CLI 또는 Fusion-powered editor에서 직접 체감되는 축 | VS Code extension, supported features matrix |
-| dbt platform | Studio IDE, jobs, Catalog, dbt CLI와 연결될 때 가치가 커지는 축 | environments, CI jobs, Catalog, state-aware orchestration |
-| Starter+ | Starter, Enterprise, Enterprise+에서 주로 쓰는 기능 | Semantic Layer exports, Catalog, Copilot |
-| Enterprise+ | Enterprise 또는 Enterprise+에서 주로 쓰는 기능 | project dependencies, advanced CI, Canvas 일부 기능 |
-| Adapter-specific | warehouse 구현 차이를 반드시 확인해야 하는 기능 | Python UDF, materialized_view, dynamic table, ClickHouse physical design |
-
-### D.8.2. 자주 헷갈리는 기능을 한눈에 비교
-
-| 기능 | 로컬 Core | 로컬 Fusion | dbt platform | 플랜/제약 |
-| --- | --- | --- | --- | --- |
-| VS Code extension | 직접 사용 불가 | 예 | 보통 platform 계정/토큰과 함께 사용 | Fusion 전용, preview 성격 |
-| dbt Docs 정적 사이트 | 예 | 예 | 예 | Catalog와 목적이 다름 |
-| Catalog | 아니오 | 아니오 | 예 | Starter+ |
-| Semantic YAML 정의 | 예 | 예 | 예 | 정의 자체는 코드에 남길 수 있음 |
-| MetricFlow local query | mf 명령 | mf 또는 dbt sl(연결 시) | dbt sl | Universal SL·exports·cache는 Starter+ 체감 |
-| Project dependencies | 아니오 | 아니오 | 예 | Enterprise 또는 Enterprise+ |
-| Python UDF | v1.11+/지원 adapter | 지원 adapter/track 확인 | release track·adapter 확인 | BigQuery/Snowflake 중심 |
-| Canvas | 아니오 | 아니오 | 예 | Enterprise 계열 |
-| Copilot | 아니오 | 아니오 | 예 | Starter+ |
-| Local MCP | 예 | 예 | 예(로컬 연결형) | uvx dbt-mcp |
-| Remote MCP | 아니오 | 아니오 | 예 | Starter+ beta 성격 |
-
-### D.8.3. 본문 16~22장을 읽을 때의 체크포인트
-
-| 장 | 먼저 확인할 배지 | 이유 |
-| --- | --- | --- |
-| 16 | Core · Fusion · dbt platform | state/defer는 로컬에서도 중요하지만, state-aware orchestration과 job metadata는 platform에서 더 강해진다. |
-| 17 | Core · dbt platform | vars/env/hooks/packages는 공통이지만 CLI 인증 방식과 platform CLI 사용 흐름이 달라진다. |
-| 18 | Core · dbt platform · Enterprise+ | governance는 공통, project dependencies는 Enterprise tier 기능이다. |
-| 19 | Core · Fusion · Starter+ | semantic 정의와 local MetricFlow는 가능하지만 Universal Semantic Layer, exports, cache는 platform 계정 가치가 크다. |
-| 20 | Adapter-specific | Python model/UDF는 지원 adapter, 버전, release track을 먼저 확인해야 한다. |
-| 21 | Enterprise+ | mesh를 진짜 cross-project ref까지 확장하려면 project dependencies와 metadata service를 함께 봐야 한다. |
-| 22 | Adapter-specific | materialized_view, dynamic table, refresh 전략이 플랫폼마다 다르다. |
-
-## D.9. Semantic Layer 운영 Runbook
-
-### D.9.1. 기본 흐름: define → validate → query → save → export → cache
-
-- Retail 트랙에서는 gross_revenue, order_count, average_order_value 같은 metric부터 시작한다.
-- Event 트랙에서는 dau, wau, session_count처럼 time spine과 grain이 중요한 metric을 먼저 만든다.
-- Subscription 트랙에서는 mrr, expansion_mrr, churned_accounts처럼 상태 변화와 SCD 감각이 필요한 metric을 만든다.
-- semantic model은 marts를 다시 쓰는 레이어가 아니라, “어떤 질문이 허용되는가”를 명시하는 정의층이라고 생각하면 훨씬 덜 헷갈린다.
-
-### D.9.2. 명령어 기준으로 보면
-
-| 목적 | dbt platform/Fusion 연결형 | local Core 또는 local-only | 언제 쓰나 |
-| --- | --- | --- | --- |
-| metric 목록 보기 | dbt sl list metrics | mf list metrics | 새 metric이 Catalog/IDE에서 보이는지 확인할 때 |
-| dimension 보기 | dbt sl list dimensions --metrics <metric> | mf list dimensions --metrics <metric> | 질문 가능한 slice를 빠르게 확인할 때 |
-| entity 보기 | dbt sl list entities --metrics <metric> | mf list entities --metrics <metric> | join path를 점검할 때 |
-| saved query 목록 | dbt sl list saved-queries --show-exports | mf list saved-queries | export/caching 연결 상태를 볼 때 |
-| metric 질의 | dbt sl query --metrics ... --group-by ... | mf query --metrics ... --group-by ... | BI 연결 전, CLI에서 질문을 검증할 때 |
-| saved query 질의 | dbt sl query --saved-query <name> | mf query --saved-query <name> | 반복 질문을 안정적으로 재현할 때 |
-| semantic 검증 | dbt sl validate | mf validate-configs | PR 또는 deploy 전에 semantic node를 먼저 막을 때 |
-| export 실행 | dbt sl export | 해당 없음/환경 의존 | 개발 환경에서 export 정의를 시험할 때 |
-
-### D.9.3. saved query, export, caching을 어디까지 다르게 봐야 할까
-
-saved query는 “반복해서 묻는 질문”을 이름 붙여 저장하는 장치다. export는 그 saved query를 실제 테이블/뷰로 써 주는 장치이고, declarative caching은 같은 입력 조건의 질의를 더 빠르게 반환하기 위한 운영 최적화다. 세 개는 경쟁 관계가 아니라, 정의 → 배포 → 성능 최적화의 순서다.
-
-**실전 메모
-• saved query만으로도 BI 팀과의 대화가 훨씬 쉬워진다.
-• export는 “metric을 물리 테이블처럼 소비하고 싶다”는 요구가 생길 때 붙인다.
-• cache는 쿼리 패턴이 반복되고 비용·응답속도 압박이 커질 때 붙인다.
-• CI에서는 dbt sl validate --select state:modified+ 같은 좁은 검증 루틴을 먼저 고민한다.**
-
-### D.9.4. 세 트랙에 바로 붙이는 semantic starter
-
-```text
-# retail_metrics.yml
-metrics:
-- name: gross_revenue
-label: Gross revenue
-type: simple
-type_params:
-measure:
-name: gross_revenue
-
-saved_queries:
-- name: daily_revenue_by_status
-query_params:
-metrics: [gross_revenue]
-group_by: [order__order_date, order__order_status]
-```
-
-같은 패턴을 Event 트랙에서는 dau / session_count, Subscription 트랙에서는 mrr / churn_rate로 바꾸면 된다. 이 책의 세 트랙은 semantic layer를 “새로운 세계”로 다루지 않고, 기존 marts를 조금 더 잘 소비하게 만드는 층으로 다룬다.
-
-## D.10. dbt platform 작업환경 가이드
-
-### D.10.1. environment는 세 가지를 정한다
-
-| environment가 정하는 것 | 설명 | 초보자 메모 |
-| --- | --- | --- |
-| dbt 실행 버전/엔진 | 어떤 dbt version 또는 release track, 어떤 engine으로 실행할지 | 로컬과 플랫폼 결과가 다르면 여기부터 본다. |
-| warehouse 연결 정보 | database/schema/role/credentials 등 실행 대상 | dev/prod 분리의 핵심이다. |
-| 실행할 코드 버전 | 어느 branch/commit의 프로젝트를 실행할지 | CI와 배포에서 중요하다. |
-
-dbt platform에서는 Development 환경과 Deployment 환경을 구분해서 생각하는 것이 중요하다. Deployment 환경 안에서도 production / staging / general 성격이 갈릴 수 있으므로, “잡(job)이 어떤 환경을 바라보는가”를 먼저 이해해야 한다.
-
-### D.10.2. 어떤 인터페이스를 언제 쓸까
-
-| 도구 | 가장 잘하는 일 | 주의점 |
-| --- | --- | --- |
-| Studio IDE | 브라우저에서 바로 build/test/run, Catalog와의 왕복, platform-native 개발 | 로컬 편집기와의 습관 차이를 인정해야 한다. |
-| dbt CLI | 로컬 터미널에서 dbt 명령과 MetricFlow 명령을 동일한 리듬으로 실행 | dbt_cloud.yml 또는 profiles.yml 등 인증 흐름을 먼저 맞춘다. |
-| VS Code extension | Fusion 기반 LSP, 인라인 오류, 리팩터링, hover 정보 | Fusion 전용이며 Core CLI 단독과는 다르다. |
-| Catalog | 동적 문서/lineage/협업 메타데이터 탐색 | dbt Docs 정적 사이트와 목적이 다르다. |
-| dbt Docs | 정적 사이트 생성·호스팅이 쉬운 문서 출력 | 최신 메타데이터 경험은 Catalog 쪽이 더 풍부하다. |
-| Canvas | 시각적 모델 작성과 빠른 초안 제작 | Enterprise 계열 기능이며 모든 팀에 필수는 아니다. |
-
-### D.10.3. job 설계는 “얼마나 자주, 얼마나 넓게, 누가 소비하나”로 정한다
-
-- CI job: PR 변경분과 downstream만 좁게 build/test한다.
-- Deploy job: production metadata를 남기며 안정적으로 전체 또는 상태 기준 범위를 실행한다.
-- Documentation/metadata job: Catalog를 더 풍부하게 쓰려면 job에서 문서 metadata를 남기는 습관이 필요하다.
-- Semantic export/cache job: saved query exports와 caching을 운영하려면 주기와 freshness를 함께 본다.
-
-**선택 기준
-• local-only: 비용 제어와 자유도가 가장 크지만, 문서/CI/공유 메타데이터는 직접 구축해야 한다.
-• hybrid: 로컬 개발 + platform 배포/문서/CI를 섞는 가장 현실적인 형태다.
-• platform-first: Studio/Catalog/Jobs/Canvas를 한 흐름으로 쓰는 팀에 잘 맞는다.**
-
-## D.11. 고급 테스트·문서화·메타데이터
-
-### D.11.1. 테스트는 실패 여부만이 아니라 “어떻게 실패를 남길지”까지 설계한다
-
-| 설정 | 무엇을 바꾸나 | 언제 유용한가 |
-| --- | --- | --- |
-| severity | warn / error | 배포를 막을지, 경고로만 남길지 구분할 때 |
-| error_if / warn_if | 실패 임계치 | 실패 건수가 1건이면 error, 특정 비율 이상이면 warn처럼 다르게 둘 때 |
-| where | 테스트 범위 제한 | 최근 n일 데이터만 점검하거나 활성 행만 볼 때 |
-| store_failures | 실패 행 저장 여부 | 문제 행을 triage 테이블로 남기고 싶을 때 |
-| store_failures_as | view / table / ephemeral | 실패 결과를 어떤 relation으로 남길지 정할 때 |
-| fail_calc / limit | 실패 계산식·샘플 제한 | 대용량 테스트 결과를 현실적으로 다룰 때 |
-
-### D.11.2. selectors.yml과 indirect_selection은 팀 규칙을 코드화한다
-
-```text
-selectors:
-- name: ci_core
-definition:
-union:
-- method: state
-value: modified+
-indirect_selection: buildable
-- method: tag
-value: critical
-```
-
-indirect_selection을 eager, cautious, buildable 중 무엇으로 두느냐에 따라 “연결된 테스트를 얼마나 공격적으로 함께 고를지”가 달라진다. 개인 개발에서는 eager가 편하지만, CI에서는 buildable이나 cautious가 더 예측 가능한 경우가 많다.
-
-### D.11.3. 문서화는 description만이 아니다
-
-| 기능 | 핵심 역할 | 메모 |
-| --- | --- | --- |
-| docs block + doc() | 긴 설명과 공통 설명 조각 재사용 | 모델/컬럼 설명을 더 DRY하게 관리할 수 있다. |
-| persist_docs | warehouse comments로 설명 남기기 | 지원 여부와 mixed-case 주의사항을 adapter별로 확인한다. |
-| meta | manifest에 팀 메타데이터 남기기 | owner, pii, domain, sla 같은 태그를 코드로 남길 때 좋다. |
-| query-comment | 실행 쿼리에 메타데이터 태그 남기기 | 특히 BigQuery에서는 job labels와 함께 비용 추적에 유용하다. |
-
-**품질 운영 루틴
-1) 핵심 model에 기본 data test를 붙인다.
-2) 실패가 자주 나는 test에는 warn/error 임계치를 설계한다.
-3) store_failures로 triage 테이블을 남긴다.
-4) meta와 query-comment로 owner·도메인·비용 추적 정보를 함께 남긴다.**
-
-## D.12. 업그레이드·릴리스 트랙·행동 변화 체크리스트
-
-### D.12.1. 먼저 support 상태를 읽는 법
-
-| 상태 | 뜻 | 운영 메모 |
-| --- | --- | --- |
-| Active | 일반 버그 수정과 보안 패치가 이어지는 지원 구간 | 가능하면 이 구간을 기준으로 학습/운영한다. |
-| Critical | 보안·설치 이슈 중심의 제한적 지원 구간 | 당장 못 올리더라도 업그레이드 계획을 세워야 한다. |
-| Deprecated | 문서는 남아 있어도 유지보수 기대치가 크게 떨어지는 구간 | 새 기능을 기대하지 말고 마이그레이션을 준비한다. |
-| End of Life | 패치가 더 이상 나오지 않는 구간 | 실운영 장기 유지 대상으로는 피해야 한다. |
-
-### D.12.2. dbt platform release track을 고르는 기준
-
-| release track | 성격 | 누가 먼저 고려하나 |
-| --- | --- | --- |
-| Latest Fusion | 새 엔진의 최신 build를 가장 먼저 받는 축 | Fusion 실험과 최신 기능 추적이 중요한 팀 |
-| Latest | dbt platform의 최신 기능을 가장 빠르게 받는 축 | 새 기능을 빨리 쓰고 싶은 팀 |
-| Compatible | 최근 dbt Core 공개 버전과의 호환성을 더 중시하는 월간 cadence | Core와 platform을 함께 쓰는 hybrid 팀 |
-| Extended | Compatible보다 한 단계 더 완만한 cadence | 변화 흡수가 느린 엔터프라이즈 팀 |
-| Fallback | 가장 느린 cadence 계열 | 변경 리스크를 최소화해야 하는 팀 |
-
-### D.12.3. behavior changes와 deprecations는 같은 것이 아니다
-
-behavior change flags는 새 기본 동작으로 넘어가기 전의 이행 창구에 가깝고, deprecations는 앞으로 제거될 문법/행동을 경고하는 신호에 가깝다. 둘 다 “나중에 보자”로 미루기 쉬운데, 실제로는 버전 업그레이드 품질의 절반이 여기서 갈린다.
-
-```text
-# dbt_project.yml
-flags:
-require_generic_test_arguments_property: true
-state_modified_compare_more_unrendered_values: true
-```
-
-- 업그레이드는 dev 환경에서 먼저 시도하고, selectors로 범위를 좁혀 smoke test를 돈다.
-- deprecation 경고는 릴리스 직전이 아니라 분기 초반에 정리해야 팀 전체 비용이 낮다.
-- packages와 adapter의 require-dbt-version 조건도 함께 확인한다.
-
-## D.13. AI · Copilot · MCP 빠른 안내
-
-### D.13.1. 어떤 AI 기능을 어디에 쓰면 좋은가
-
-| 기능 | 잘하는 일 | 주의점 |
-| --- | --- | --- |
-| Copilot | 문서, 테스트, metric, semantic model, SQL 초안 생성 | 생성 결과를 바로 merge하지 말고 프로젝트 규칙으로 다시 리뷰한다. |
-| Local MCP | 로컬 코드·모델·문서 컨텍스트를 에이전트에 제공 | 로컬 환경 권한과 tool access를 최소화한다. |
-| Remote MCP | Semantic Layer, Discovery, SQL 등 원격 서비스형 MCP 사용 | plan/preview 상태와 데이터 접근 범위를 먼저 점검한다. |
-| Studio agent / Canvas AI | 브라우저 기반 초안 생성과 리팩터링 보조 | 생성 편의성과 최종 품질 검증은 별개다. |
-
-**실무 권장 순서
-• 먼저 source/ref/test/docs 규칙을 사람 기준으로 고정한다.
-• 그 다음 Copilot이나 MCP를 붙여 속도를 높인다.
-• AI가 만든 산출물도 결국 contracts, tests, CI, owners 같은 인간 규칙 아래에 있어야 한다.**
-
-## D.14. Trino 실전 메모
-
-Trino는 단일 저장소라기보다 다양한 원천 위에서 SQL을 실행하고 조합하는 query engine에 가깝다. dbt 입장에서는 write 가능한 catalog와 schema를 고르고, materialization이 실제로 만들어질 위치를 명확히 하는 것이 첫 번째 과제다.
-
-### D.14.1. Trino를 어디에 쓰면 좋은가
-
-| 상황 | 장점 | 주의점 |
-| --- | --- | --- |
-| 여러 원천을 한 SQL로 조합하고 싶을 때 | catalog를 넘나드는 federation과 cross-source join | 모든 connector가 write를 지원하는 것은 아니다 |
-| 팀이 이미 Trino/Starburst를 운영할 때 | dbt-trino로 동일한 SQL 워크플로 유지 | catalog/schema 권한을 미리 정리해야 한다 |
-| 빠른 local trial이 필요할 때 | memory catalog로 작은 예제를 즉시 실험 가능 | 재시작 시 데이터와 메타데이터가 사라진다 |
-| NoSQL 원천을 SQL로 보고 싶을 때 | MongoDB/Elasticsearch connector로 SQL layer를 만들 수 있다 | type mapping과 predicate pushdown 한계를 이해해야 한다 |
-
-### D.14.2. dbt-trino profile 예시
-
-```yaml
-trino_lab:
-  target: dev
-  outputs:
-    dev:
-      type: trino
-      method: none
-      user: trino
-      host: localhost
-      port: 8080
-      database: memory
-      schema: raw_retail
-      threads: 4
-```
-
-여기서 database는 Trino의 catalog 이름이고 schema는 그 catalog 안의 schema다. 따라서 “어느 connector 위에 relation을 만들 것인가”를 먼저 정해야 한다.
-
-### D.14.3. memory catalog를 이용한 가장 빠른 실험
+### D.9.1. Diagnostic quickstart
 
 ```bash
-# Trino catalog file
-connector.name=memory
-memory.max-data-per-node=128MB
-# day1 raw bootstrap
-trino -f 03_platform_bootstrap/retail/trino/setup_day1.sql
-# dbt-trino build
-dbt build -s retail+
+bash codes/04_chapter_snippets/app_d/diagnostic_quickstart.sh
 ```
 
-> memory catalog는 빠른 실험에는 좋지만, 재시작 시 데이터가 사라진다는 점을 항상 기억하자.
-
-## D.15. NoSQL + SQL Layer 실전 메모
-
-문서형 원천을 SQL layer 뒤에 두는 패턴은 Trino 자체와는 구분해서 읽는 편이 이해가 쉽다. 이 절은 MongoDB를 예로 들지만, 같은 접근은 Elasticsearch/OpenSearch 같은 검색형 원천에도 확장할 수 있다.
-
-### D.15.1. NoSQL + SQL Layer 패턴: MongoDB를 예로
-
-이 책에서 NoSQL + SQL Layer는 “원천을 문서형으로 유지하되, 분석 변환은 SQL 계층에서 수행한다”는 뜻으로 사용한다. companion pack은 MongoDB JSONL과 Trino MongoDB connector 설정 예시를 같이 제공한다.
+### D.9.2. Trino connection preflight
 
 ```bash
-# 1) MongoDB에 raw 문서 적재
-bash 03_platform_bootstrap/nosql_sql_layer_mongodb_via_trino/subscription/setup_day1_mongodb.sh
-# 2) Trino catalog 설정
-connector.name=mongodb
-mongodb.connection-url=mongodb://localhost:27017/
-# 3) dbt는 SQL layer에 연결
-type: trino
-database: mongodb
-schema: raw_billing
+bash codes/04_chapter_snippets/app_d/trino_connection_preflight.sh
 ```
 
-같은 발상은 Elasticsearch/OpenSearch에도 적용된다. 다만 search index는 relation처럼 단순하지 않기 때문에, source 레벨에서 타입과 키를 더 보수적으로 모델링하는 편이 안전하다.
+### D.9.3. merge unique key precheck
 
-### D.15.2. NoSQL + SQL Layer에서 특히 조심할 점
+```sql
+-- codes/04_chapter_snippets/app_d/trino_merge_unique_key_precheck.sql
+```
 
-- write가 필요한 dbt 모델은 write-capable connector 위에 materialize해야 한다.
-- federation join은 편하지만, cost와 latency가 플랫폼 단일 실행보다 커질 수 있다.
-- 문서형 원천은 키 누락과 nested field 타입 차이가 흔하므로 staging에서 flatten 규칙을 먼저 정한다.
-- Trino profile의 database/catalog와 실제 source schema 이름을 혼동하지 말아야 한다.
+### D.9.4. state/defer/clone 예시
+
+```bash
+bash codes/04_chapter_snippets/app_d/state_defer_clone_examples.sh
+```
+
+### D.9.5. vars / Airflow 실행 예시
+
+```bash
+bash codes/04_chapter_snippets/app_d/vars_airflow_examples.sh
+```
+
+---
+
+## D.10. 마지막 조언
+
+이 부록의 목적은 모든 문제의 답을 외우는 것이 아니다.  
+답보다 먼저 **질문 순서**를 익히는 데 있다.
+
+- 지금 이건 연결 문제인가?
+- 구조 문제인가?
+- 데이터 계약 문제인가?
+- 운영 표면을 잘못 고른 문제인가?
+- 아니면 단순히 더 좁은 selector부터 봐야 하는 문제인가?
+
+이 질문 순서가 몸에 들어오면, dbt 프로젝트는 훨씬 덜 무너지고 훨씬 빨리 회복된다.

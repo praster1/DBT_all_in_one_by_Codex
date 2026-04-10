@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="760" viewBox="0 0 1280 760">
+  <rect width="100%" height="100%" fill="#0b1020"/>
+  <text x="80" y="70" fill="#f8fafc" font-size="34" font-family="Arial, sans-serif" font-weight="700">Appendix D · Diagnostic Ladder</text>
+  <text x="80" y="110" fill="#94a3b8" font-size="18" font-family="Arial, sans-serif">연결 → 구조 → 컴파일 → 데이터 계약 → 운영 표면 순서로 문제를 좁힌다.</text>
+
+  <g transform="translate(90,160)">
+    <rect x="0" y="0" rx="18" ry="18" width="1100" height="92" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <circle cx="55" cy="46" r="24" fill="#1d4ed8"/>
+    <text x="46" y="54" fill="white" font-size="22" font-family="Arial, sans-serif" font-weight="700">1</text>
+    <text x="100" y="38" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif" font-weight="700">연결/설치</text>
+    <text x="100" y="68" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">venv · adapter · profiles.yml · dbt debug · 서비스 기동 상태</text>
+  </g>
+
+  <g transform="translate(90,280)">
+    <rect x="0" y="0" rx="18" ry="18" width="1100" height="92" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <circle cx="55" cy="46" r="24" fill="#2563eb"/>
+    <text x="46" y="54" fill="white" font-size="22" font-family="Arial, sans-serif" font-weight="700">2</text>
+    <text x="100" y="38" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif" font-weight="700">구조</text>
+    <text x="100" y="68" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">dbt parse · source/ref 이름 · selectors · YAML 파싱</text>
+  </g>
+
+  <g transform="translate(90,400)">
+    <rect x="0" y="0" rx="18" ry="18" width="1100" height="92" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <circle cx="55" cy="46" r="24" fill="#0ea5e9"/>
+    <text x="46" y="54" fill="white" font-size="22" font-family="Arial, sans-serif" font-weight="700">3</text>
+    <text x="100" y="38" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif" font-weight="700">컴파일/SQL</text>
+    <text x="100" y="68" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">dbt compile · dbt show · Jinja 분기 · macro override · target/compiled</text>
+  </g>
+
+  <g transform="translate(90,520)">
+    <rect x="0" y="0" rx="18" ry="18" width="1100" height="92" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <circle cx="55" cy="46" r="24" fill="#14b8a6"/>
+    <text x="46" y="54" fill="white" font-size="22" font-family="Arial, sans-serif" font-weight="700">4</text>
+    <text x="100" y="38" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif" font-weight="700">데이터 계약</text>
+    <text x="100" y="68" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">grain · unique_key · tests · freshness · snapshots · contracts</text>
+  </g>
+
+  <g transform="translate(90,640)">
+    <rect x="0" y="0" rx="18" ry="18" width="1100" height="92" fill="#111827" stroke="#334155" stroke-width="2"/>
+    <circle cx="55" cy="46" r="24" fill="#22c55e"/>
+    <text x="46" y="54" fill="white" font-size="22" font-family="Arial, sans-serif" font-weight="700">5</text>
+    <text x="100" y="38" fill="#f8fafc" font-size="24" font-family="Arial, sans-serif" font-weight="700">운영 표면/가용성</text>
+    <text x="100" y="68" fill="#cbd5e1" font-size="18" font-family="Arial, sans-serif">Core vs Fusion vs dbt platform · Semantic Layer · Mesh · plan 제한</text>
+  </g>
+</svg>
