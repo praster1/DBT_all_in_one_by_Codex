@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="700" viewBox="0 0 1200 700">
+<style>
+  .title{font:700 30px Arial; fill:#0f172a}
+  .sub{font:600 21px Arial; fill:#334155}
+  .body{font:16px Arial; fill:#1e293b}
+  .small{font:14px Arial; fill:#475569}
+  .axis{stroke:#334155; stroke-width:3}
+  .tick{stroke:#94a3b8; stroke-width:2}
+  .day{font:16px Arial; fill:#0f172a}
+  .event{fill:#eff6ff; stroke:#2563eb; stroke-width:2; rx:14}
+  .ingest{fill:#fef3c7; stroke:#d97706; stroke-width:2; rx:14}
+  .window{fill:#ecfccb; stroke:#65a30d; stroke-width:2; rx:18}
+  .arrow{stroke:#475569; stroke-width:3; fill:none; marker-end:url(#arrow)}
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+    <polygon points="0 0,10 5,0 10" fill="#475569"/>
+  </marker>
+</defs>
+<rect width="1200" height="700" fill="#fff"/>
+<text x="50" y="55" class="title">그림 10-3. late-arriving event와 backfill window</text>
+<text x="50" y="90" class="small">event_at와 event_ingested_at를 분리해서 생각해야 lookback window가 왜 필요한지 보인다.</text>
+
+<line x1="110" y1="320" x2="1090" y2="320" class="axis"/>
+<line x1="240" y1="305" x2="240" y2="335" class="tick"/>
+<line x1="470" y1="305" x2="470" y2="335" class="tick"/>
+<line x1="700" y1="305" x2="700" y2="335" class="tick"/>
+<line x1="930" y1="305" x2="930" y2="335" class="tick"/>
+<text x="205" y="360" class="day">2026-04-01</text>
+<text x="435" y="360" class="day">2026-04-02</text>
+<text x="665" y="360" class="day">2026-04-03</text>
+<text x="895" y="360" class="day">build 시점</text>
+
+<rect x="160" y="170" width="250" height="90" class="event"/>
+<text x="185" y="205" class="sub">late event 발생</text>
+<text x="185" y="236" class="body">event_at = 2026-04-01 23:50</text>
+
+<rect x="620" y="170" width="250" height="90" class="ingest"/>
+<text x="645" y="205" class="sub">warehouse 적재</text>
+<text x="645" y="236" class="body">event_ingested_at = 2026-04-03 09:40</text>
+
+<path d="M410 215 L620 215" class="arrow"/>
+
+<rect x="350" y="430" width="420" height="110" class="window"/>
+<text x="375" y="468" class="sub">lookback 2 days</text>
+<text x="375" y="500" class="body">max(event_date) 기준 최근 2일을 다시 계산하면</text>
+<text x="375" y="528" class="body">4월 1일 partition correction까지 흡수할 수 있다.</text>
+
+<rect x="820" y="430" width="250" height="110" class="event"/>
+<text x="845" y="468" class="sub">window가 0이면?</text>
+<text x="845" y="500" class="body">4월 1일 DAU 보정이 누락될 수 있다.</text>
+</svg>

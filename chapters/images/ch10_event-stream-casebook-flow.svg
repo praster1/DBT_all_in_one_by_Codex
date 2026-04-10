@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780">
+<style>
+  .title{font:700 30px 'Arial'; fill:#0f172a}
+  .sub{font:600 20px 'Arial'; fill:#334155}
+  .body{font:16px 'Arial'; fill:#1e293b}
+  .small{font:14px 'Arial'; fill:#475569}
+  .box{fill:#f8fafc; stroke:#94a3b8; stroke-width:2; rx:18}
+  .accent{fill:#eff6ff; stroke:#2563eb; stroke-width:2; rx:18}
+  .accent2{fill:#f0fdf4; stroke:#16a34a; stroke-width:2; rx:18}
+  .accent3{fill:#fff7ed; stroke:#ea580c; stroke-width:2; rx:18}
+  .arrow{stroke:#475569; stroke-width:3; fill:none; marker-end:url(#arrow)}
+  .dashed{stroke:#64748b; stroke-width:2.5; fill:none; stroke-dasharray:8 8; marker-end:url(#arrow)}
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+    <polygon points="0 0, 10 5, 0 10" fill="#475569"/>
+  </marker>
+</defs>
+<rect width="1200" height="780" fill="#ffffff"/>
+<text x="50" y="55" class="title">그림 10-1. Event Stream 예제의 전체 흐름</text>
+<text x="50" y="88" class="small">day1과 day2를 오가며 source freshness, incremental, semantic-ready surface를 함께 본다.</text>
+
+<rect x="60" y="140" width="250" height="170" class="accent"/>
+<text x="85" y="175" class="sub">1) Raw sources</text>
+<text x="85" y="210" class="body">raw_events.users</text>
+<text x="85" y="238" class="body">raw_events.events</text>
+<text x="85" y="270" class="small">event_at / event_ingested_at 구분</text>
+<text x="85" y="296" class="small">source freshness 적용</text>
+
+<rect x="360" y="140" width="250" height="170" class="accent2"/>
+<text x="385" y="175" class="sub">2) Staging</text>
+<text x="385" y="210" class="body">stg_users</text>
+<text x="385" y="238" class="body">stg_events</text>
+<text x="385" y="270" class="small">timestamp 표준화</text>
+<text x="385" y="296" class="small">event_date / platform 정규화</text>
+
+<rect x="660" y="110" width="240" height="120" class="accent3"/>
+<text x="685" y="145" class="sub">3-A) Session mart</text>
+<text x="685" y="178" class="body">fct_sessions</text>
+<text x="685" y="206" class="small">session grain</text>
+
+<rect x="660" y="260" width="240" height="120" class="accent3"/>
+<text x="685" y="295" class="sub">3-B) Daily mart</text>
+<text x="685" y="328" class="body">fct_daily_active_users</text>
+<text x="685" y="356" class="small">daily grain / incremental</text>
+
+<rect x="950" y="175" width="190" height="160" class="accent"/>
+<text x="975" y="210" class="sub">4) Semantic-ready</text>
+<text x="975" y="245" class="body">sessions</text>
+<text x="975" y="272" class="body">DAU</text>
+<text x="975" y="300" class="small">saved query</text>
+<text x="975" y="326" class="small">cache / export</text>
+
+<path d="M310 225 L360 225" class="arrow"/>
+<path d="M610 205 L660 170" class="arrow"/>
+<path d="M610 245 L660 320" class="arrow"/>
+<path d="M900 235 L950 235" class="arrow"/>
+<path d="M900 320 L950 290" class="arrow"/>
+
+<rect x="60" y="420" width="500" height="250" class="box"/>
+<text x="85" y="455" class="sub">day1</text>
+<text x="85" y="488" class="body">- users 3명, events 7건, sessions 3개</text>
+<text x="85" y="518" class="body">- DAU: 2026-04-01 = 2, 2026-04-02 = 1</text>
+<text x="85" y="548" class="body">- 정상적이고 안정된 초기 상태를 만든다</text>
+<text x="85" y="596" class="sub">day2</text>
+<text x="85" y="628" class="body">- 신규 events + 신규 user 추가</text>
+<text x="85" y="658" class="body">- late-arriving event 1건 삽입</text>
+
+<rect x="650" y="420" width="490" height="250" class="box"/>
+<text x="675" y="455" class="sub">이 장에서 익히는 운영 감각</text>
+<text x="675" y="490" class="body">1. dbt source freshness로 source 상태를 먼저 본다</text>
+<text x="675" y="520" class="body">2. stg_events에서 event grain을 보존한다</text>
+<text x="675" y="550" class="body">3. fct_sessions와 fct_daily_active_users를 분리한다</text>
+<text x="675" y="580" class="body">4. incremental + lookback window로 late arrival를 흡수한다</text>
+<text x="675" y="610" class="body">5. semantic-ready surface로 반복 질문을 올린다</text>
+
+<path d="M560 545 L650 545" class="dashed"/>
+</svg>

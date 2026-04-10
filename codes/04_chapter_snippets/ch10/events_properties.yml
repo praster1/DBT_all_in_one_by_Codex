@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: stg_events
+    columns:
+      - name: event_id
+        data_tests:
+          - not_null
+          - unique
+      - name: user_id
+        data_tests:
+          - not_null
+      - name: event_name
+        data_tests:
+          - accepted_values:
+              values: ['page_view', 'add_to_cart', 'checkout', 'purchase', 'signup']
+      - name: platform
+        data_tests:
+          - accepted_values:
+              values: ['web', 'ios', 'android']
+  - name: fct_sessions
+    columns:
+      - name: session_id
+        data_tests:
+          - not_null
+          - unique
+  - name: fct_daily_active_users
+    columns:
+      - name: event_date
+        data_tests:
+          - not_null
+          - unique

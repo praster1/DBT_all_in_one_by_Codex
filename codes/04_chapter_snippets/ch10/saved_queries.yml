@@ -1,0 +1,10 @@
+saved_queries:
+  - name: sessions_by_day_platform
+    description: Reusable sessions query by day and platform
+    label: Sessions by day and platform
+    query_params:
+      metrics:
+        - total_sessions
+      group_by:
+        - metric_time
+        - platform

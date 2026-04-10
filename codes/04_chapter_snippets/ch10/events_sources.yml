@@ -1,0 +1,21 @@
+version: 2
+
+sources:
+  - name: raw_events
+    schema: raw_events
+    loaded_at_field: event_ingested_at
+    freshness:
+      warn_after: {count: 6, period: hour}
+      error_after: {count: 24, period: hour}
+    tables:
+      - name: events
+        columns:
+          - name: event_id
+            data_tests:
+              - not_null
+              - unique
+          - name: user_id
+            data_tests:
+              - not_null
+      - name: users
+        loaded_at_field: signup_at

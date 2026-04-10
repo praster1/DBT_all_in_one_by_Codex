@@ -1,0 +1,30 @@
+semantic_models:
+  - name: event_sessions
+    model: ref('fct_sessions')
+    description: Session grain fact for repeated event-domain questions.
+    entities:
+      - name: session
+        type: primary
+        expr: session_id
+      - name: user
+        type: foreign
+        expr: user_id
+    dimensions:
+      - name: session_started_at
+        type: time
+        type_params:
+          time_granularity: day
+      - name: platform
+        type: categorical
+    measures:
+      - name: sessions
+        description: Count of sessions
+        agg: count_distinct
+        expr: session_id
+
+metrics:
+  - name: total_sessions
+    description: Total sessions by time and platform
+    type: simple
+    type_params:
+      measure: sessions

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="720" viewBox="0 0 1200 720">
+<style>
+  .title{font:700 30px Arial; fill:#0f172a}
+  .sub{font:600 21px Arial; fill:#334155}
+  .body{font:16px Arial; fill:#1e293b}
+  .small{font:14px Arial; fill:#475569}
+  .box1{fill:#eff6ff; stroke:#2563eb; stroke-width:2.5; rx:18}
+  .box2{fill:#f0fdf4; stroke:#16a34a; stroke-width:2.5; rx:18}
+  .box3{fill:#fff7ed; stroke:#ea580c; stroke-width:2.5; rx:18}
+  .warn{fill:#fef2f2; stroke:#dc2626; stroke-width:2.5; rx:18}
+  .arrow{stroke:#475569; stroke-width:3; fill:none; marker-end:url(#arrow)}
+</style>
+<defs>
+  <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+    <polygon points="0 0,10 5,0 10" fill="#475569"/>
+  </marker>
+</defs>
+<rect width="1200" height="720" fill="#fff"/>
+<text x="50" y="55" class="title">그림 10-2. event / session / daily grain의 관계</text>
+
+<rect x="70" y="135" width="280" height="390" class="box1"/>
+<text x="95" y="175" class="sub">event grain</text>
+<text x="95" y="215" class="body">한 행 = 한 이벤트</text>
+<text x="95" y="250" class="body">예시 컬럼</text>
+<text x="95" y="282" class="small">event_id</text>
+<text x="95" y="308" class="small">user_id</text>
+<text x="95" y="334" class="small">event_at</text>
+<text x="95" y="360" class="small">event_name</text>
+<text x="95" y="386" class="small">platform</text>
+<text x="95" y="412" class="small">session_id</text>
+<text x="95" y="458" class="body">여기서 바로 DAU를 만들면?</text>
+<text x="95" y="488" class="small">질문이 바뀔 때마다 giant SQL</text>
+
+<rect x="460" y="135" width="280" height="390" class="box2"/>
+<text x="485" y="175" class="sub">session grain</text>
+<text x="485" y="215" class="body">한 행 = 한 세션</text>
+<text x="485" y="250" class="body">대표 컬럼</text>
+<text x="485" y="282" class="small">session_id</text>
+<text x="485" y="308" class="small">session_started_at</text>
+<text x="485" y="334" class="small">session_ended_at</text>
+<text x="485" y="360" class="small">user_id</text>
+<text x="485" y="386" class="small">event_count</text>
+<text x="485" y="458" class="body">세션 길이 / 세션 수 / 전환 분석</text>
+
+<rect x="850" y="135" width="280" height="390" class="box3"/>
+<text x="875" y="175" class="sub">daily grain</text>
+<text x="875" y="215" class="body">한 행 = 하루</text>
+<text x="875" y="250" class="body">대표 컬럼</text>
+<text x="875" y="282" class="small">event_date</text>
+<text x="875" y="308" class="small">dau</text>
+<text x="875" y="334" class="small">platform</text>
+<text x="875" y="458" class="body">DAU / 추세 / 알림 지표</text>
+
+<path d="M350 330 L460 330" class="arrow"/>
+<path d="M740 330 L850 330" class="arrow"/>
+
+<rect x="260" y="570" width="680" height="95" class="warn"/>
+<text x="285" y="608" class="sub">핵심 원칙</text>
+<text x="285" y="640" class="body">event grain을 보존하고, session과 daily 질문은 각각 별도 mart로 올린다. 서로 다른 grain을 한 모델에 섞지 않는다.</text>
+</svg>
