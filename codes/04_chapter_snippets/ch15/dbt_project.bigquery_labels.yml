@@ -1,0 +1,14 @@
+query-comment:
+  comment: "{{ query_comment(node) }}"
+  job-label: true
+
+models:
+  my_project:
+    marts:
+      +labels:
+        domain: finance
+        owner: analytics
+    events:
+      +labels:
+        domain: clickstream
+        owner: product_analytics

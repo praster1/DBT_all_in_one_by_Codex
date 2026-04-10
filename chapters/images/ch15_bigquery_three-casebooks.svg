@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<defs><style>
+.title{font:700 30px Arial; fill:#0f172a}
+.h{font:700 22px Arial; fill:#0f172a}
+.b{font:500 16px Arial; fill:#334155}
+.small{font:500 14px Arial; fill:#475569}
+</style></defs>
+<rect width="1200" height="760" fill="#f8fafc"/>
+<text x="60" y="60" class="title">세 casebook는 BigQuery에서 서로 다른 비용 곡선을 가진다</text>
+
+<rect x="70" y="130" width="320" height="470" rx="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+<text x="125" y="180" class="h">Retail Orders</text>
+<text x="102" y="222" class="b">핵심 질문: 주문 기준 fact를</text>
+<text x="102" y="248" class="b">어떻게 안정적으로 조회할까?</text>
+<text x="102" y="290" class="b">권장:</text>
+<text x="102" y="320" class="b">• order_date partition</text>
+<text x="102" y="350" class="b">• customer_id, order_id cluster</text>
+<text x="102" y="380" class="b">• mart는 table 우선</text>
+<text x="102" y="410" class="b">• 필요 시 작은 merge</text>
+<text x="102" y="450" class="b">주의:</text>
+<text x="102" y="480" class="b">• fanout은 숫자 오류 + 비용 증가</text>
+<text x="102" y="510" class="b">• view 중첩이 두꺼워지지 않게</text>
+
+<rect x="440" y="130" width="320" height="470" rx="22" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+<text x="505" y="180" class="h">Event Stream</text>
+<text x="470" y="222" class="b">핵심 질문: 날짜 단위로</text>
+<text x="470" y="248" class="b">얼마나 좁게 다시 읽을까?</text>
+<text x="470" y="290" class="b">권장:</text>
+<text x="470" y="320" class="b">• event_date partition</text>
+<text x="470" y="350" class="b">• require_partition_filter</text>
+<text x="470" y="380" class="b">• insert_overwrite / microbatch</text>
+<text x="470" y="410" class="b">• lookback 명시</text>
+<text x="470" y="450" class="b">주의:</text>
+<text x="470" y="480" class="b">• late arrival 무시 금지</text>
+<text x="470" y="510" class="b">• merge를 기본처럼 쓰지 않기</text>
+
+<rect x="810" y="130" width="320" height="470" rx="22" fill="#ede9fe" stroke="#7c3aed" stroke-width="3"/>
+<text x="845" y="180" class="h">Subscription &amp; Billing</text>
+<text x="840" y="222" class="b">핵심 질문: 상태와 이력을</text>
+<text x="842" y="248" class="b">어떻게 공용 API로 만들까?</text>
+<text x="842" y="290" class="b">권장:</text>
+<text x="842" y="320" class="b">• metric_date / effective_date 기준</text>
+<text x="842" y="350" class="b">• current / history 분리</text>
+<text x="842" y="380" class="b">• table + thin materialized view</text>
+<text x="842" y="410" class="b">• labels / resource_tags / contracts</text>
+<text x="842" y="450" class="b">주의:</text>
+<text x="842" y="480" class="b">• invoice만으로 MRR를 대체하지 않기</text>
+<text x="842" y="510" class="b">• current-state merge 비용에 주의</text>
+
+<text x="70" y="680" class="small">BigQuery에서 핵심은 '무엇이 돌아가는가'가 아니라 '무엇을 반복적으로 안전하게, 싸게 읽게 만들 것인가'다.</text>
+</svg>

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="780" viewBox="0 0 1200 780">
+<defs><style>
+.title{font:700 30px Arial; fill:#0f172a}
+.h{font:700 20px Arial; fill:#0f172a}
+.b{font:500 16px Arial; fill:#334155}
+.small{font:500 14px Arial; fill:#475569}
+.arrow{stroke:#475569; stroke-width:4; fill:none; marker-end:url(#m)}
+</style>
+<marker id="m" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 z" fill="#475569"/></marker>
+</defs>
+<rect width="1200" height="780" fill="#f8fafc"/>
+<text x="60" y="60" class="title">BigQuery의 파티션·클러스터·증분 전략은 함께 결정한다</text>
+
+<rect x="70" y="120" width="300" height="170" rx="20" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+<text x="105" y="162" class="h">1. Partition 기준</text>
+<text x="100" y="198" class="b">Retail → order_date</text>
+<text x="100" y="228" class="b">Events → event_date / event_ts</text>
+<text x="100" y="258" class="b">Subscription → metric_date / effective_date</text>
+
+<rect x="450" y="120" width="300" height="170" rx="20" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+<text x="492" y="162" class="h">2. Cluster 기준</text>
+<text x="486" y="198" class="b">읽을 때 함께 자주 묻는 키</text>
+<text x="486" y="228" class="b">customer_id / session_id / subscription_id</text>
+<text x="486" y="258" class="b">파티션을 대체하지는 않음</text>
+
+<rect x="830" y="120" width="300" height="170" rx="20" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+<text x="865" y="162" class="h">3. Incremental 전략</text>
+<text x="865" y="198" class="b">merge → row-level upsert</text>
+<text x="865" y="228" class="b">insert_overwrite → partition replacement</text>
+<text x="865" y="258" class="b">microbatch → time-series batches</text>
+
+<path d="M370 205 L450 205" class="arrow"/>
+<path d="M750 205 L830 205" class="arrow"/>
+
+<rect x="150" y="380" width="900" height="280" rx="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="185" y="430" class="h">선택 기준</text>
+<text x="188" y="470" class="b">• 큰 event table이면 partition이 먼저다. partition 없이 merge 최적화부터 하지 않는다.</text>
+<text x="188" y="505" class="b">• merge는 source + destination scan 비용을 감당할 수 있을 때 쓴다.</text>
+<text x="188" y="540" class="b">• insert_overwrite는 파티션을 명확히 교체할 수 있는 time-series fact에 특히 강하다.</text>
+<text x="188" y="575" class="b">• microbatch는 event_time, begin, batch_size, lookback이 명확할 때 강하다.</text>
+<text x="188" y="610" class="b">• require_partition_filter는 강력하지만 downstream/test까지 고려해야 한다.</text>
+</svg>

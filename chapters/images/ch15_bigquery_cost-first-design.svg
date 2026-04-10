@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760">
+<defs>
+<style>
+.title{font:700 30px 'Arial'; fill:#0f172a}
+.sub{font:500 18px 'Arial'; fill:#334155}
+.h{font:700 20px 'Arial'; fill:#0b1324}
+.b{font:500 16px 'Arial'; fill:#334155}
+.small{font:500 14px 'Arial'; fill:#475569}
+.line{stroke:#64748b; stroke-width:3; fill:none}
+</style>
+</defs>
+<rect width="1200" height="760" fill="#f8fafc"/>
+<text x="60" y="65" class="title">BigQuery는 cost-first 설계가 필요한 dbt 플랫폼이다</text>
+<text x="60" y="95" class="sub">같은 DAG라도 BigQuery에서는 읽는 범위, 파티션, 클러스터링, 실행 범위가 곧 비용이 된다.</text>
+<rect x="70" y="150" rx="20" ry="20" width="230" height="160" fill="#e0f2fe" stroke="#0284c7" stroke-width="3"/>
+<text x="100" y="195" class="h">project / dataset</text>
+<text x="98" y="228" class="b">database ↔ project</text>
+<text x="98" y="256" class="b">schema ↔ dataset</text>
+<text x="98" y="284" class="small">위치(location)까지 설계 대상</text>
+
+<rect x="345" y="150" rx="20" ry="20" width="230" height="160" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+<text x="388" y="195" class="h">partition / cluster</text>
+<text x="380" y="228" class="b">무슨 날짜로 자를까?</text>
+<text x="382" y="256" class="b">무슨 키로 모을까?</text>
+<text x="382" y="284" class="small">성능과 비용의 첫 기준</text>
+
+<rect x="620" y="150" rx="20" ry="20" width="230" height="160" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+<text x="665" y="195" class="h">incremental</text>
+<text x="658" y="228" class="b">merge / insert_overwrite</text>
+<text x="676" y="256" class="b">microbatch</text>
+<text x="664" y="284" class="small">무엇을 다시 읽고 쓸까?</text>
+
+<rect x="895" y="150" rx="20" ry="20" width="230" height="160" fill="#ede9fe" stroke="#7c3aed" stroke-width="3"/>
+<text x="948" y="195" class="h">operability</text>
+<text x="940" y="228" class="b">labels / tags / docs</text>
+<text x="952" y="256" class="b">selector / CI</text>
+<text x="942" y="284" class="small">운영 흔적과 통제면</text>
+
+<path d="M185 330 C185 410, 460 410, 460 500" class="line"/>
+<path d="M460 330 C460 410, 460 410, 460 500" class="line"/>
+<path d="M735 330 C735 410, 460 410, 460 500" class="line"/>
+<path d="M1010 330 C1010 410, 460 410, 460 500" class="line"/>
+
+<rect x="310" y="500" rx="24" ry="24" width="300" height="170" fill="#0f172a"/>
+<text x="362" y="552" style="font:700 28px Arial; fill:#ffffff">BigQuery dbt 설계 질문</text>
+<text x="360" y="592" style="font:500 18px Arial; fill:#cbd5e1">1) 무엇을 읽는가?</text>
+<text x="360" y="622" style="font:500 18px Arial; fill:#cbd5e1">2) 무엇을 다시 쓰는가?</text>
+<text x="360" y="652" style="font:500 18px Arial; fill:#cbd5e1">3) 누가 안전하게 다시 읽는가?</text>
+
+<rect x="670" y="505" rx="18" ry="18" width="430" height="155" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+<text x="698" y="545" class="h">세 casebook에 적용되는 방식</text>
+<text x="700" y="578" class="b">Retail Orders → order_date partition, customer/order clustering</text>
+<text x="700" y="608" class="b">Event Stream → event_date partition, insert_overwrite/microbatch</text>
+<text x="700" y="638" class="b">Subscription → metric_date/effective_date, thin governed marts</text>
+</svg>

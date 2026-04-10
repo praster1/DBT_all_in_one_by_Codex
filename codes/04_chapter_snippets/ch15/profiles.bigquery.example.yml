@@ -1,0 +1,14 @@
+my_bigquery:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      project: my-gcp-project
+      dataset: analytics_dev
+      keyfile: /path/to/keyfile.json
+      location: asia-northeast3
+      threads: 4
+      priority: interactive
+      retries: 1
+      job_execution_timeout_seconds: 300
